@@ -49,6 +49,7 @@ class SeleniumMode(BaseClass):
         #driver 要放外面
         global driver
         if empty_driver == True:
+            print("if empty_driver == True:")
             driver = self.get_empty_driver(headless)
         else:
             if driver == None:
@@ -73,16 +74,23 @@ class SeleniumMode(BaseClass):
         # options.add_experimental_option('prefs', prefs)
         options.add_argument('--ignore-certificate-errors')
         options.add_argument('--ignore-ssl-errors')
+        options.add_argument('--disable-infobars')# 禁用浏览器正在被自动化程序控制的提示
+        #options.add_argument('--blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
         if headless:
             options.add_argument('--headless')
             options.add_argument('--disable-gpu')
+            options.add_argument('--blink-settings=imagesEnabled=false')
         options.add_experimental_option("excludeSwitches", ['enable-automation', 'enable-logging'])
         return  options
 
     def get_chromedriverpath(self,version="102.0.5005.61"):
         bin_dir = self.config_common.get_bin_dir()
-        chromedriver_path = os.path.join(bin_dir , f"chromedriver_win32_v{version}.exe")
-        if os.path.isfile(chromedriver_path) :
+        chromedriver_path = None
+        if self.is_windows():
+            chromedriver_path = os.path.join(bin_dir , f"chromedriver_win32_v{version}.exe")
+        if self.is_linux():
+            chromedriver_path = os.path.join(bin_dir , f"chromedriver_linux64_v{version}")
+        if os.path.exists(chromedriver_path) and os.path.isfile(chromedriver_path) :
             return chromedriver_path
         else:
             self.get_googledriver_from_down(version=version)
@@ -94,6 +102,7 @@ class SeleniumMode(BaseClass):
         driver = None
         options = self.get_options(headless)
         driver_path = self.get_chromedriverpath()
+        print(f"driver_path {driver_path}")
         driver = webdriver_.Chrome(executable_path=driver_path,chrome_options=options)
         driver.set_window_rect(x=200, y=20, width=1950, height=980)
         return driver
@@ -913,7 +922,10 @@ class SeleniumMode(BaseClass):
         return self.__downloadedGoogledriverHTML
 
     def get_googledriver_downloadurl(self,version="103.0.5060.24"):
-        googledriver_downloadurl = f"https://chromedriver.storage.googleapis.com/{version}/chromedriver_win32.zip"
+        if self.is_windows():
+            googledriver_downloadurl = f"https://chromedriver.storage.googleapis.com/{version}/chromedriver_win32.zip"
+        if self.is_linux():
+            googledriver_downloadurl = f"https://chromedriver.storage.googleapis.com/{version}/chromedriver_linux64.zip"
         return googledriver_downloadurl
 
     def get_googledriver_savename(self,version,suffix="zip"):
@@ -948,8 +960,14 @@ class SeleniumMode(BaseClass):
         filename = res[0]
         extract_dir = os.path.splitext(filename)[0]
         self.file_common.zip_extractall(filename,extract_dir)
-        old_name = os.path.join(extract_dir,"chromedriver.exe")
-        new_name = f"{os.path.splitext(filename)[0]}.exe"
+        if self.is_windows():
+            old_name = os.path.join(extract_dir,"chromedriver.exe")
+        if self.is_linux():
+            old_name = os.path.join(extract_dir,"chromedriver")
+        if self.is_windows():
+            new_name = f"{os.path.splitext(filename)[0]}.exe"
+        if self.is_linux():
+            new_name = f"{os.path.splitext(filename)[0]}"
         shutil.copyfile(old_name,new_name)
         print(f"rmtree : {old_name}")
         shutil.rmtree(extract_dir)
@@ -979,3 +997,26 @@ timeout /t 1
         cmd_file = f"{bin_dir}/getchromedrivers.bat"
         print(f"cmd save to {cmd_file}")
         self.file_common.save_file(cmd_file,cmd,encoding="utf-8",override=True)
+
+
+    def is_windows(self):
+        import platform
+        sysstr = platform.system()
+        windows = "windows"
+        linux = "linux"
+        if (sysstr.lower() == windows):
+            return True
+        elif (sysstr.lower() == linux):
+            return False
+        return False
+
+    def is_linux(self):
+        import platform
+        sysstr = platform.system()
+        windows = "windows"
+        linux = "linux"
+        if (sysstr.lower() == windows):
+            return False
+        elif (sysstr.lower() == linux):
+            return True
+        return False

@@ -60,10 +60,9 @@ class B2Bworkbaidu(BaseClass):
         self.__config = self.get_config()
         self.multi_browser_init()
         # pprint.pprint(self.__config)
-        # e = ThreadPoolExecutor(max_workers=2)
+        e = ThreadPoolExecutor(max_workers=2)
         # e.submit(self.network_list)
-        # e.submit(self.active)
-        # e.set_daemon(True)
+        e.submit(self.active)
         pass
 
     def get_config(self):
@@ -218,7 +217,7 @@ class B2Bworkbaidu(BaseClass):
             except EOFError:
                 right.close()
                 break
-    def ff(self):
+    def ff(self,arg):
         print("test")
 
     def multi_browser_init(self):
