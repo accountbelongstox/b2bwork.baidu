@@ -1,1 +1,1 @@
-git pull -u gitee master
+git pull gitee master
