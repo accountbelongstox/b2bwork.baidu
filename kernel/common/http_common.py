@@ -1,12 +1,12 @@
 from kernel.base_class.base_class import *
 import os
-import re
+# import re
 import urllib
 import http.cookiejar
 from bs4 import BeautifulSoup
-import requests
+# import requests
 from concurrent.futures import ThreadPoolExecutor,as_completed
-from multiprocessing import Pool,Process
+# from multiprocessing import Pool,Process
 
 class HttpCommon(BaseClass):
 

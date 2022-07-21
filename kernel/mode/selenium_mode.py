@@ -3,7 +3,7 @@ from kernel.base_class.base_class import *
 import os
 import re
 import time
-import lxml.html
+#import lxml.html
 from lxml import etree
 from lxml.cssselect import CSSSelector
 from selenium import webdriver
@@ -15,9 +15,9 @@ from concurrent.futures import ThreadPoolExecutor
 import threading
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.events import EventFiringWebDriver, AbstractEventListener
+# from selenium.webdriver.support.events import EventFiringWebDriver, AbstractEventListener
 from selenium.common.exceptions import NoSuchElementException
-import sched
+# import sched
 
 # 为保证 driver 能正常打开
 driver = None

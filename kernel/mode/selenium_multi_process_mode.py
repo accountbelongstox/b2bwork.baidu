@@ -31,8 +31,8 @@ class SeleniumMultiProcessMode(BaseClass):
     def __init__(self):
         pass
 
-    def create_thread(self, fn=None, args=(), thread_id=None, thread_name=None,daemon=False):
-        thread = NewThread(fn, args, thread_id, thread_name,daemon)
+    def create_thread(self, target=None, args=(), thread_id=None, thread_name=None,daemon=False):
+        thread = NewThread(target, args, thread_id, thread_name,daemon)
         self.__threads.append(thread)
         return thread
 
@@ -77,9 +77,9 @@ class SeleniumMultiProcessMode(BaseClass):
 
 
 class NewThread(threading.Thread):  # 继承父类threading.Thread
-    def __init__(self, fn, args, thread_id, thread_name,daemon):
+    def __init__(self, target, args, thread_id, thread_name,daemon):
         threading.Thread.__init__(self,name=thread_name,daemon=daemon)
-        self.fn = fn
+        self.target = target
         self.args = args
         self.thread_id = thread_id
         self.name = thread_name
@@ -87,8 +87,8 @@ class NewThread(threading.Thread):  # 继承父类threading.Thread
 
     def run(self, ):  # 把要执行的代码写到run函数里面 线程在创建后会直接运行run函数
         pprint.pprint(dir(threading.Thread))
-        if self.fn != None:
-            self.fn(self.args)
+        if self.target != None:
+            self.target(self.args)
         else:
             print("Not give Function")
 

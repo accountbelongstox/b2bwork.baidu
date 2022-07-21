@@ -57,15 +57,63 @@ class B2Bworkbaidu(BaseClass):
         pass
 
     def main(self,argv):
-        self.__config = self.get_config()
         self.multi_browser_init()
         # pprint.pprint(self.__config)
         e = ThreadPoolExecutor(max_workers=2)
         # e.submit(self.network_list)
-        e.submit(self.active)
+        # e.submit(self.active)
         pass
 
-    def get_config(self):
+    def get_acoount_config(self,account_name,keys):
+        if type(keys) == str:
+            keys = [keys]
+        if self.__config["multiaccount_support"] == True:
+            multiaccount_datas = self.__config["multiaccount_datas"]
+            # 有多账号的时候从多账号中读配置
+            # 如果多账号没有配置则读总配置
+            # 账号单独配置覆盖主配置
+            config = NoneF
+            print(f"account_name {account_name}")
+            for account in multiaccount_datas:
+                print(f"account {account}")
+                login == account["login"]
+                if account_name == login["loginUser"]:
+                    config = account
+            if config == None:
+                print(f"Not found account:{account_name} in multiaccount_datas in get_acoount_set.")
+                return None
+            value_as_multiaccounts = None
+            value_as_config = None
+            value = None
+            for key in keys:
+                if value_as_multiaccounts == None:
+                    value_as_multiaccounts = config[key]
+                elif key in value_as_multiaccounts:
+                    value_as_multiaccounts = value_as_multiaccounts[key]
+                if value_as_config == None:
+                    value_as_config = self.__config[key]
+                elif key in value_as_config:
+                    value_as_config = value_as_config[key]
+                if key in value_as_multiaccounts:
+                    value = value_as_multiaccounts[key]
+                else:
+                    value = value_as_config[key]
+            return value
+        else:
+            #没有多账号直接从配置中读配置
+            if account_name == self.__config["loginUser"]:
+                value = None
+                for key in keys:
+                    if value == None:
+                        value = self.__config[key]
+                    else:
+                        value = value[key]
+                return value
+            else:
+                print(f"Not found account:{account_name} in self.__config['loginUser'] in get_acoount_set.")
+                return None
+
+    def init_config(self):
         data_serialization_file = "b2bwork_baidu_account_data.list"
         config = {
             # 多账号支持,会启动多线程多个浏览器, 设置在下面
@@ -76,8 +124,8 @@ class B2Bworkbaidu(BaseClass):
                 "active_check": False,  # 活动检查
                 "loadURL": "https://b2bwork.baidu.com/login?redirect=https%3A%2F%2Fb2bwork.baidu.com%2Fdashboard",
                 "loadingVerifyURL": "https://b2bwork.baidu.com/login",
-                "loadUser": "zsw100023649",
-                "loadPwd": "Mts77066.",
+                "loginUser": "zsw100023649",
+                "loginPwd": "Mts77066.",
                 "userInput": """//*[@id="uc-common-account"]""",
                 "pwdInput": """//*[@id="ucsl-password-edit"]""",
                 "submit": "#submit-form",
@@ -154,8 +202,8 @@ class B2Bworkbaidu(BaseClass):
                 # [  # 多账号的数据列表，设置会覆盖父一级的设置
                 # {
                 #     "login": {
-                #         "loadUser": "zsw100023649",
-                #         "loadPwd": "Mts77066."
+                #         "loginUser": "zsw100023649",
+                #         "loginPwd": "Mts77066."
                 #     },
                 #     "data_fields": []
                 # }
@@ -163,13 +211,52 @@ class B2Bworkbaidu(BaseClass):
                 self.db_common.unserialization(data_serialization_file),
                 # {
                 #     "login": {
-                #         "loadUser": "zsw100023649",
-                #         "loadPwd": "Mts77066."
+                #         "loginUser": "zsw100023649",
+                #         "loginPwd": "Mts77066."
                 #     },
                 #     "data_fields": []
                 # }
         }
-        return config
+        self.__config = config
+        return self.__config
+
+    def add_account_to_account(self,args):
+        try:
+            loginUser = args[0]
+        except:
+            return None
+        try:
+            loginPwd = args[1]
+        except:
+            return None
+        try:
+            data_fields = args[2]
+        except:
+            data_fields = []
+        account_data = {
+            "loginUser":loginUser,
+            "loginPwd":loginPwd,
+            "data_fields":data_fields
+        }
+        self.db_common.serialization("b2bwork_baidu_account_data.list",account_data)
+
+
+    def get_config(self,account_name=None,keys=None):
+        if self.__config == None:
+            self.init_config()
+        #只有account_name一项，用account_name代替key
+        if (account_name != None and keys == None) \
+                or\
+            (account_name == None and keys != None):
+            if account_name in self.__config:
+                return self.__config[account_name]
+            else:
+                print(f"Not found {account_name} in self.__config")
+                return None
+        if account_name != None and keys != None:
+            return self.get_acoount_config(account_name,keys)
+        else:
+            return self.init_config()
 
     @flask_app.route('/manager')
     @flask_app.route('/manager/<name>')
@@ -217,41 +304,40 @@ class B2Bworkbaidu(BaseClass):
             except EOFError:
                 right.close()
                 break
-    def ff(self,arg):
-        print("test")
 
     def multi_browser_init(self):
-        self.__config = self.get_config()
+        multiaccount_support = self.get_config("multiaccount_support")
+        multiaccount_datas = self.get_config("multiaccount_datas")#本线程总支持的账号数
 
-        multiaccount_support = self.__config["multiaccount_support"]
-        multiaccount_datas = self.__config["multiaccount_datas"]#本线程总支持的账号数
+        # print(f"multiaccount_datas",multiaccount_datas)
         account_max_thread = 1
         if multiaccount_support == True:
             account_max_thread = len(multiaccount_datas)  # 最大支持的打开浏览器线程数为账号数
-        account_max_thread += 1 #预留一个线程给网络监听使用
-        # for thread in range(account_max_thread):
-        th = self.selenium_multi_process_mode.create_thread(self.ff,(("left","right"),"ab0"),thread_id=1, thread_name="Thread-1",)
-        th.start()
+        # account_max_thread += 1 #预留一个线程给网络监听使用
 
-        # pools = ThreadPoolExecutor(max_workers=account_max_thread)
-        # pools.submit(self.network_list)
-        # for datas in multiaccount_datas:
-        #     login = datas["login"]
-        #     loadPwd = datas["loadPwd"]
-        #     loadUser = datas["loadUser"]
-        # pools.submit(self.active,login,loadPwd)
+        for id in range(account_max_thread):
+            account = multiaccount_datas[id]
+            login = account["login"]
+            print(login)
+            loginPwd = login["loginPwd"]
+            loginUser = login["loginUser"]
+            data_fields = self.get_config(account_name="test", keys="data_fields")
 
+            print(data_fields)
+            args = (loginUser,loginPwd,data_fields)
+            # th = self.selenium_multi_process_mode.create_thread(target=self.active,args=args,thread_id=id, thread_name=loginUser,)
+            # th.start()
         return
 
 
-    def active(self):
+    def active(self,args):
         active_period = self.__config["login"]["login_active"]["active_period"]
         while True:
             #开始活动检查标志
             self.__config["login"]["active_check"] = True
             print("processing active checking.")
             if self.__config["login"]["mustLogin"]:
-                isLogin = self.login_check()
+                isLogin = self.login_check(args)
                 self.__config["login"]["isLogin"] = isLogin
                 if not isLogin:
                    self.__config["login"]["isLogin"] = self.login_and_verify()
@@ -341,14 +427,14 @@ class B2Bworkbaidu(BaseClass):
         pwdInput = self.__config["login"]["pwdInput"]
         submit = self.__config["login"]["submit"]
         loadURL = self.__config["login"]["loadURL"]
-        loadUser = self.__config["login"]["loadUser"]
-        loadPwd = self.__config["login"]["loadPwd"]
+        loginUser = self.__config["login"]["loginUser"]
+        loginPwd = self.__config["login"]["loginPwd"]
         self.init_driver(loadURL)
         userInputElement = self.selenium_mode.find_element_wait(self.__driver,userInput)
         pwdInputElement = self.selenium_mode.find_element_wait(self.__driver,pwdInput)
         submitElement = self.selenium_mode.find_element_wait(self.__driver,submit)
-        userInputElement.send_keys(loadUser)
-        pwdInputElement.send_keys(loadPwd)
+        userInputElement.send_keys(loginUser)
+        pwdInputElement.send_keys(loginPwd)
         submitElement.click()
 
     def login_and_verify(self):
