@@ -1,3 +1,5 @@
+git config --global user.email "accountbelongstox@163.com"
+git config --global user.name "accountbelongstox"
 git add .
 git branch -M 'master'
 git commit -m "new amend"
