@@ -1,3 +1,4 @@
+import operator
 import shutil
 from kernel.base_class.base_class import *
 import os
@@ -5,6 +6,7 @@ import re
 import time
 #import lxml.html
 from lxml import etree
+from bs4 import BeautifulSoup
 from lxml.cssselect import CSSSelector
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -14,55 +16,105 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 # from selenium.webdriver.support.events import EventFiringWebDriver, AbstractEventListener
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.action_chains import ActionChains
 # import sched
 import platform
 # 为保证 driver 能正常打开
 from kernel.base_class.load_module_class import LoadModuleClass
 
 drivers_dict = {}
-driver = None
+modules_dict = {}
 webdriver_as = webdriver
-
 
 class SeleniumMode(BaseClass):
     __driver = None
+    __driver_name = None
+    __headless = None
 
     def __init__(self,args):
-        if len(args) == 0:
+        global drivers_dict
+        global modules_dict
+
+        if type(args) == dict:
+            args = [args]
+        configs = None
+        for arg in args:
+            if type(arg) is dict and "module" in arg:
+                configs = arg
+                break
+            else:
+                continue
+        if configs is None \
+                or \
+        ("module" not in configs):
             return
-        driver_name_from_modulename = args[0]
-        try:
-            headless = args[1]
-        except:
-            headless = False
+        module = configs["module"]
+        driver_name = configs["driver_name"]
+        headless = configs["headless"]
+        self.__headless = headless
+        self.__driver_name = driver_name
+        drivers_dict[self.__driver_name] = None
+        modules_dict[self.__driver_name] = module
         LoadModuleClass().add_module(self)
-        drivers_dict[driver_name_from_modulename] = self.get_empty_driver(headless=headless)
-        self.__driver = drivers_dict[driver_name_from_modulename]
-        pass
 
     # 创建一个浏览器，并可直接使用类的功能无须传递driver对象
-    def main(self,args,self_mode_name=None,callback_module_name=None,headless=False):
-        if type(args) == dict:
-            module = args["module"]
-        else:
-            module = args
-        if self_mode_name is None:
-            self_mode_name = os.path.splitext(os.path.basename(__file__))[0]
-        if callback_module_name is None:
-            callback_module_name = module.__class__.__name__
-        selenium_mode = SeleniumMode((callback_module_name,headless))
-        module.__setattr__(self_mode_name,selenium_mode)
-        module.__setattr__("__driver",selenium_mode.get_driver())
+    def main(self,args):
+        opts = {}
+
+        if "module" not in args:
+            return
+
+        module = args["module"]
+        opts["module"] = module
+        try:
+            opts["headless"] = args["headless"]
+        except:
+            opts["headless"] = False
+
+        try:
+            opts["driver_name"] = args["driver_name"]
+        except:
+            opts["driver_name"] = module.__class__.__name__
+
+        selenium_mode = SeleniumMode(opts)
+        module.__setattr__("selenium_mode",selenium_mode)
 
     def get_driver(self,):
+        self.__driver = self.get_empty_driver()
         return self.__driver
 
     def open_url(self,url):
-        self.__driver.get(url)
+        driver = self.get_driver()
+        driver.get(url)
 
-    def open_new_window(self,url_web):
-        js = "window.open('{}','_blank');"
-        self.__driver.execute_script(js.format(url_web))
+    def open_url_as_new_window(self, url, cb=None,loadJQuery=True):
+        global drivers_dict
+        driver = self.get_driver()
+        if driver.current_url == 'data:,':
+            driver.get(url=url)
+            print('load_JQuery loading..')
+            if loadJQuery:self.load_JQuery_wait()
+        else:
+            len_drivers = len(driver.window_handles)
+            url_exists = False
+            for index in range(len_drivers):
+                driver.switch_to.window(driver.window_handles[index])
+                if driver.current_url == url:
+                    url_exists = True
+                    print(f"init_driver found url is {driver.current_url}")
+                    break
+            if not url_exists:
+                js = "window.open('{}','_blank');"
+                driver.execute_script(js.format(url))
+                print(f"init_driver open url by new window for page {url}")
+                len_drivers = len(driver.window_handles)
+                index = len_drivers - 1
+                driver.switch_to.window(driver.window_handles[ index ])
+                if loadJQuery:self.load_JQuery_wait()
+            else:
+                print(f"init_driver not open, url is expected of {url}")
+
+        if cb != None: cb()
 
     def open_local_html_to_beautifulsoup(self,html_name="index.html"):
         content = self.file_common.load_html(html_name)
@@ -81,11 +133,17 @@ class SeleniumMode(BaseClass):
             self.get_googledriver_from_down(version=version)
             return chromedriver_path
 
-    def get_empty_driver(self,headless=False):
-        global driver
+    def get_empty_driver(self):
         global webdriver_as
-
-        driver = None
+        global drivers_dict
+        global modules_dict
+        #
+        # print(f"self.__driver_name {self.__driver_name} from get_empty_driver")
+        # print(f"self.__driver {self.__driver} from get_empty_driver")
+        # print(f"drivers_dict {drivers_dict} from get_empty_driver")
+        # print(f"modules_dict {modules_dict} from get_empty_driver")
+        if drivers_dict[self.__driver_name] != None and self.__driver != None and operator.__eq__(drivers_dict[self.__driver_name],self.__driver):
+            return self.__driver
         options = webdriver_as.ChromeOptions()
         # 处理SSL证书错误问题
         # prefs = {'profile.managed_default_content_settings.images': 2}
@@ -94,7 +152,7 @@ class SeleniumMode(BaseClass):
         options.add_argument('--ignore-ssl-errors')
         options.add_argument('--disable-infobars')# 禁用浏览器正在被自动化程序控制的提示
         #options.add_argument('--blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
-        if headless:
+        if self.__headless:
             options.add_argument('--headless')
             options.add_argument('--disable-gpu')
             options.add_argument('--blink-settings=imagesEnabled=false')
@@ -102,9 +160,12 @@ class SeleniumMode(BaseClass):
 
 
         driver_path = self.get_chromedriverpath()
-        print(f"driver_path {driver_path}")
         driver = webdriver_as.Chrome(executable_path=driver_path,chrome_options=options)
         driver.set_window_rect(x=200, y=20, width=1950, height=980)
+
+        drivers_dict[self.__driver_name] = driver
+        self.__driver = drivers_dict[self.__driver_name]
+        modules_dict[self.__driver_name].__setattr__("__driver",driver)
         return driver
 
 
@@ -116,16 +177,27 @@ class SeleniumMode(BaseClass):
         print(f"HTML_Content:{len(HTML_Content)}")
 
     def switch_to_window_by_url_and_open(self,url):
+        driver = self.get_driver()
         url_is_exist = self.switch_to_window_by_url(url)
         if url_is_exist == False:
             self.open_new_window(url)
             time.sleep(1)
-            return self.__driver.current_window_handle
+            return driver.current_window_handle
         else:
             return url_is_exist
 
+    def find_url_from_driver_handles(self,url):
+        driver = self.get_driver()
+        url_index = -1
+        handle_l = len(driver.window_handles)
+        for index in range(handle_l):
+            driver.switch_to.window(driver.window_handles[index])
+            if operator.__eq__(driver.current_url, url):
+                url_index = index
+        return url_index
+
     def switch_to_window_by_url(self,url,loop_startpoint_handle_index=None):
-        driver = self.__driver
+        driver = self.get_driver()
         current_url = driver.current_url
         # print(driver.current_window_handle.index("t"))
         if current_url.find(url) == 0:
@@ -146,25 +218,27 @@ class SeleniumMode(BaseClass):
                 return i
         return -1
 
-    def document_initialised(self,driver):
+    def document_initialised(self):
+        driver = self.get_driver()
         outerHTML = driver.execute_script("return document.documentElement.outerHTML")
-        if outerHTML != None and len(outerHTML) > 0:
+        if outerHTML != None or len(outerHTML) > 0:
             print(f"outerHTML{len(outerHTML)}")
         return driver
 
+    def find_html_wait(self):
+        driver = self.get_driver()
+        outerHTML = driver.execute_script("return document.documentElement.outerHTML")
+        if outerHTML != None or len(outerHTML) > 0:
+            return outerHTML
+        else:
+            return self.find_html_wait()
 
-    def find_element(self,selector):
-        eles = self.find_elements(selector)
+    def find_element(self,selector,is_beautifulsoup=False):
+        eles = self.find_elements(selector,is_beautifulsoup)
         ele = None
         if len(eles) > 0:
             ele = eles[0]
         return ele
-
-    def is_beautifulsoup(self,driver):
-        if driver.__class__.__name__.__eq__("BeautifulSoup"):
-            return True
-        else:
-            return False
 
     def find_element_wait(self,selector):
         print(f"find_element_wait {selector}")
@@ -198,9 +272,8 @@ class SeleniumMode(BaseClass):
         # return texts
 
 
-    def find_elements(self,selector):
+    def find_elements(self,selector,is_beautifulsoup=False):
         st = self.parse_selector(selector)
-        is_beautifulsoup = self.is_beautifulsoup( driver)
         if st == "css":
             ele = self.elementsBy_CSS(selector,is_beautifulsoup)
         elif st == "xpath":
@@ -284,47 +357,59 @@ class SeleniumMode(BaseClass):
             return "xpath"
         if selector[0] == "#":
             return "id"
+        if f"<{selector.strip()}>".lower() in HTML_TABS:
+            return "tag"
         if selector.strip().lower() in HTML_TABS:
             return "tag"
         return "text"
 
     def elementsBy_TAGNAME(self,selector,is_beautifulsoup):
+        driver = self.get_driver()
         if is_beautifulsoup:
-            eles = self.__driver.find_all(selector)
+            html = self.find_html_wait()
+            soup = BeautifulSoup(html, "html.parser")
+            eles = soup.find_all(selector)
         else:
-            eles = self.__driver.find_elements_by_link_text(selector)
+            eles = driver.find_elements_by_link_text(selector)
         return eles
 
 
     def elementsBy_ID(self,selector,is_beautifulsoup):
+        driver = self.get_driver()
         selector = selector[1:]
         if is_beautifulsoup:
-            ele = [ self.__driver.find(id=selector) ]
+            html = self.find_html_wait()
+            soup = BeautifulSoup(html, "html.parser")
+            ele = [ soup.find(id=selector) ]
         else:
-            ele = [ self.__driver.find_element(By.ID, selector) ]
+            ele = [ driver.find_element(By.ID, selector) ]
         return ele
 
     def elementsBy_CSS(self,selector,is_beautifulsoup):
-        eles = []
+        driver = self.get_driver()
         if is_beautifulsoup:
-            html = str(self.__driver.html)
-            tree = etree.HTML(html)
-            selector = CSSSelector(selector)
-            for ele in selector(tree):
-                eles.append(ele)
+            html = self.find_html_wait()
+            soup = BeautifulSoup(html,"html.parser")
+            eles = soup.select(selector)
+            # print(eles)
+            # tree = etree.HTML(html)
+            # selector = CSSSelector(selector)
+            # for ele in selector(tree):
+            #     eles.append(ele)
         else:
-            eles = self.__driver.find_elements(By.CSS_SELECTOR,selector)
+            eles = driver.find_elements(By.CSS_SELECTOR,selector)
         return eles
 
 
     def elementsBy_XPATH(self,selector,is_beautifulsoup):
+        driver = self.get_driver()
         if is_beautifulsoup:
-            html = str(self.__driver.html)
+            html = self.find_html_wait()
             tree = etree.HTML(html)
             ele = tree.xpath("//*")
         else:
-            print(f"elementsBy_XPATH element ",selector)
-            ele = self.__driver.find_element(By.XPATH, selector)
+            print(f"elementsBy_XPATH ",selector)
+            ele = driver.find_element(By.XPATH, selector)
         return ele
 
     def find_text_from(self, selector, s_text):
@@ -342,18 +427,20 @@ class SeleniumMode(BaseClass):
         return eles[0]
 
     def wait_element_and_paurse(self,selector):
+        driver = self.get_driver()
         st = self.parse_selector(selector)
         if st == "css":
-            WebDriverWait(self.__driver, timeout=10).until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
+            WebDriverWait(driver, timeout=10).until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
         elif st == "xpath":
             pass
         if st == "id":
             pass
         if st == "tag":
-            WebDriverWait(self.__driver, timeout=10).until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
+            WebDriverWait(driver, timeout=10).until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
 
 
     def execute_js(self,js):
+        driver = self.get_driver()
         js_path = self.config_common.get_static("js_dir")
         js_path = os.path.join(js_path,js)
         if os.path.isfile(js_path):
@@ -363,7 +450,7 @@ class SeleniumMode(BaseClass):
             description = "is javascript string"
             js_string = js
         print(f"execute_js js {description} {js_string[:50]}")
-        return self.__driver.execute_script(js_string)
+        return driver.execute_script(js_string)
 
     def execute_javascript_wait(self,js):
         print(f"execute_javascript_wait of execute_js")
@@ -378,9 +465,10 @@ class SeleniumMode(BaseClass):
         return self.execute_js("load_jquery.js")
 
     def load_JQuery_wait(self):
+        driver = self.get_driver()
         print(f"load_JQuery_wait")
         try:
-            jQueryString = self.__driver.execute_script(f"return jQuery.toString()")
+            jQueryString = driver.execute_script(f"return jQuery.toString()")
             print(jQueryString)
             return True
         except:
@@ -388,13 +476,24 @@ class SeleniumMode(BaseClass):
             self.load_JQuery()
             return self.load_JQuery_wait()
 
+    def move_to_element(self,selector,x_offset,y_offset):
+        driver = self.get_driver()
+        ele = self.find_element(selector)
+        # ActionChains(driver).move_to_element_with_offset(ele, start, step).click().perform()
+        # ActionChains(driver).click_and_hold(ele).move_by_offset(start, step).release().perform()
+        # ActionChains(driver).drag_and_drop_by_offset(verify_img_element,start, step).perform()
+        ActionChains(driver).click_and_hold(ele).move_by_offset(x_offset,y_offset ).release().perform()  # 5.与上一句相同，移动到指定坐标
+        # ActionChains(driver).context_click(ele).perform()
+
     def js_find_attr(self, selector, attr):
+        driver = self.get_driver()
         find_element_js = f"""src___ =  $("{selector}").attr("{attr}");return src___;"""
         print(find_element_js)
-        return self.__driver.execute_script(find_element_js)
+        return driver.execute_script(find_element_js)
 
     def send_keys(self,selector,val):
-        self.__driver.execute_script(f"""
+        driver = self.get_driver()
+        driver.execute_script(f"""
         $("{selector}").val("{val}")
         """)
 
@@ -410,7 +509,7 @@ class SeleniumMode(BaseClass):
     def get_googledriver_downloadurl(self,version="103.0.5060.24"):
         if self.is_windows():
             googledriver_downloadurl = f"https://chromedriver.storage.googleapis.com/{version}/chromedriver_win32.zip"
-        if self.is_linux():
+        else:
             googledriver_downloadurl = f"https://chromedriver.storage.googleapis.com/{version}/chromedriver_linux64.zip"
         return googledriver_downloadurl
 

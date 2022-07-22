@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
-    <title>EduAdmin - Dashboard</title>
+    <title>管理后台 - Api</title>
 	<!-- Vendors Style-->
 	<link rel="stylesheet" href="static/css/vendors_css.css">
 	<!-- Style-->
@@ -14,12 +14,11 @@
   </head>
 <body class="hold-transition light-skin sidebar-mini theme-primary fixed">
 <div class="wrapper">
-	<div id="loader"></div>
   <header class="main-header">
 	<div class="d-flex align-items-center logo-box justify-content-start">
 		<a href="#" class="waves-effect waves-light nav-link d-none d-md-inline-block mx-10 push-btn bg-transparent" data-toggle="push-menu" role="button">
 			<span class="icon-Align-left"><span class="path1"></span><span class="path2"></span><span class="path3"></span></span>
-		</a>	
+		</a>
 		<!-- Logo -->
 		<a href="" class="logo">
 		  <!-- logo-->
@@ -27,8 +26,8 @@
 			  <span class="light-logo"><img src="static/picture/logo-dark-text.png" alt="logo"></span>
 			  <span class="dark-logo"><img src="static/picture/logo-light-text.png" alt="logo"></span>
 		  </div>
-		</a>	
-	</div>  
+		</a>
+	</div>
     <!-- Header Navbar -->
     <nav class="navbar navbar-static-top">
       <!-- Sidebar toggle button-->
@@ -40,30 +39,30 @@
 			    </a>
 			</li>
 			<li class="btn-group nav-item d-none d-xl-inline-block">
-				<a href="contact_app_chat.html" class="waves-effect waves-light nav-link svg-bt-icon" title="Chat">
+				<a href="#" class="waves-effect waves-light nav-link svg-bt-icon" title="Chat">
 					<i class="icon-Chat"><span class="path1"></span><span class="path2"></span></i>
 			    </a>
 			</li>
 			<li class="btn-group nav-item d-none d-xl-inline-block">
-				<a href="mailbox.html" class="waves-effect waves-light nav-link svg-bt-icon" title="Mailbox">
+				<a href="#" class="waves-effect waves-light nav-link svg-bt-icon" title="Mailbox">
 					<i class="icon-Mailbox"><span class="path1"></span><span class="path2"></span></i>
 			    </a>
 			</li>
 			<li class="btn-group nav-item d-none d-xl-inline-block">
-				<a href="extra_taskboard.html" class="waves-effect waves-light nav-link svg-bt-icon" title="Taskboard">
+				<a href="#" class="waves-effect waves-light nav-link svg-bt-icon" title="Taskboard">
 					<i class="icon-Clipboard-check"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
 			    </a>
 			</li>
-		</ul> 
+		</ul>
 	  </div>
-		
+
       <div class="navbar-custom-menu r-side">
-        <ul class="nav navbar-nav">	
+        <ul class="nav navbar-nav">
 			<li class="btn-group nav-item d-lg-inline-flex d-none">
 				<a href="#" data-provide="fullscreen" class="waves-effect waves-light nav-link full-screen" title="Full Screen">
 					<i class="icon-Expand-arrows"><span class="path1"></span><span class="path2"></span></i>
 			    </a>
-			</li>	  
+			</li>
 			<li class="btn-group d-lg-inline-flex d-none">
 				<div class="app-menu">
 					<div class="search-bx mx-5">
@@ -128,7 +127,7 @@
 				  </li>
 				  <li>
 					<a href="#">
-					  <i class="fa fa-user text-primary"></i> Nunc fringilla lorem 
+					  <i class="fa fa-user text-primary"></i> Nunc fringilla lorem
 					</a>
 				  </li>
 				  <li>
@@ -142,8 +141,8 @@
 				  <a href="#">View all</a>
 			  </li>
 			</ul>
-		  </li>	
-		  
+		  </li>
+
 	      <!-- User Account-->
           <li class="dropdown user user-menu">
             <a href="#" class="waves-effect waves-light dropdown-toggle" data-toggle="dropdown" title="User">
@@ -158,333 +157,83 @@
 				 <a class="dropdown-item" href="#"><i class="ti-lock text-muted mr-2"></i> Logout</a>
               </li>
             </ul>
-          </li>	
-		  
+          </li>
+
           <!-- Control Sidebar Toggle Button -->
           <li>
               <a href="#" data-toggle="control-sidebar" title="Setting" class="waves-effect waves-light">
 			  	<i class="icon-Settings"><span class="path1"></span><span class="path2"></span></i>
 			  </a>
           </li>
-			
+
         </ul>
       </div>
     </nav>
   </header>
-  
+
   <aside class="main-sidebar">
     <!-- sidebar-->
-    <section class="sidebar position-relative">	
+    <section class="sidebar position-relative">
 	  	<div class="multinav">
-		  <div class="multinav-scroll" style="height: 100%;">	
+		  <div class="multinav-scroll" style="height: 100%;">
 			  <!-- sidebar menu-->
-			  <ul class="sidebar-menu" data-widget="tree">	
-				<li class="header">Api & 多账号支持</li>
+			  <ul class="sidebar-menu" data-widget="tree">
+				<li class="header">Api & 多账号支持(可支持多账号)</li>
+				  {% if manager_data.not_login > 0 %}
+			  	<li class="header" style="color: red"><span>[{{ manager_data.not_login }}个账号未初始化,请处理。]</span></li>
+					  {% else %}
 				<li class="header">[列表中显示的为可正常请求的api地址]</li>
+				  {% endif %}
 				<li class="treeview">
 				  <a href="#">
 					<i class="icon-Layout-4-blocks"><span class="path1"></span><span class="path2"></span></i>
-					<span>Api账号(已初始化)</span>
+					<span>Api账号{% if manager_data.not_login > 0 %}<span style="color: red"> / [{{ manager_data.not_login }}个需处理{% endif %}</span>
 					<span class="pull-right-container">
 					  <i class="fa fa-angle-right pull-right"></i>
 					</span>
 				  </a>
 				  <ul class="treeview-menu">
-					<li><a href=""><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Dashboard 1</a></li>
-					<li><a href="index2.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Dashboard 2</a></li>
-					<li><a href="index3.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Dashboard 3</a></li>
-					<li><a href="index4.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Dashboard 4</a></li>
-					<li><a href="index5.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Dashboard 5</a></li>
-					<li><a href="index6.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Dashboard 6</a></li>
+				  	{% for item in manager_data.accounts_list %}
+					<li><a href="{% if item.islogin == False %}javascript:get_login_verify('{{item.username}}'){% else %}{% endif %}"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>{% if item.islogin == False %}<span style="color: red">[初始化]</span>{% else %}[正常]{% endif %}{{ item.username }}</a></li>
+					{% endfor %}
 				  </ul>
 				</li>
 				<li class="treeview">
 				  <a href="#">
 					<i span="" class="icon-Layout-grid"><span class="path1"></span><span class="path2"></span></i>
-					<span>Apps</span>
+					<span>正常账号</span>
 					<span class="pull-right-container">
 					  <i class="fa fa-angle-right pull-right"></i>
 					</span>
 				  </a>
 				  <ul class="treeview-menu">
-					<li><a href="extra_calendar.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Calendar</a></li>
-					<li><a href="contact_app.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Contact List</a></li>
-					<li><a href="contact_app_chat.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Chat</a></li>
-					<li><a href="extra_taskboard.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Todo</a></li>
-					<li><a href="mailbox.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Mailbox</a></li>
+
+  				  	{% for item in manager_data.accounts_list %}
+                {% if item.islogin == True %}<li><a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>{{item.username}}</a></li>{% endif %}
+              {% endfor %}
 				  </ul>
 				</li>
-				<li class="header">Components & UI </li>
+				<li class="header">预留功能 </li>
 				<li class="treeview">
 				  <a href="#">
 					<i class="icon-Write"><span class="path1"></span><span class="path2"></span></i>
-					<span>UI Elements</span>
+					<span>预留功能</span>
 					<span class="pull-right-container">
 					  <i class="fa fa-angle-right pull-right"></i>
 					</span>
 				  </a>
-				  <ul class="treeview-menu">			
-					<li><a href="ui_grid.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Grid System</a></li>								
-					<li class="treeview">
-						<a href="#">
-							<i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Card
-							<span class="pull-right-container">
-								<i class="fa fa-angle-right pull-right"></i>
-							</span>
-						</a>
-						<ul class="treeview-menu">
-							<li><a href="box_cards.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>User Card</a></li>
-							<li><a href="box_advanced.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Advanced Card</a></li>
-							<li><a href="box_basic.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Basic Card</a></li>
-							<li><a href="box_color.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Card Color</a></li>
-							<li><a href="box_group.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Card Group</a></li>
-						</ul>
-					</li>
-					<li><a href="ui_badges.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Badges</a></li>
-					<li><a href="ui_border_utilities.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Border</a></li>
-					<li><a href="ui_buttons.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Buttons</a></li>	
-					<li><a href="ui_color_utilities.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Color</a></li>
-					<li><a href="ui_dropdown.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Dropdown</a></li>
-					<li><a href="ui_dropdown_grid.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Dropdown Grid</a></li>
-					<li><a href="ui_progress_bars.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Progress Bars</a></li>					
-					<li class="treeview">
-						<a href="#">
-							<i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Icons
-							<span class="pull-right-container">
-								<i class="fa fa-angle-right pull-right"></i>
-							</span>
-						</a>
-						<ul class="treeview-menu">
-							<li><a href="icons_fontawesome.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Font Awesome</a></li>
-							<li><a href="icons_glyphicons.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Glyphicons</a></li>
-							<li><a href="icons_material.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Material Icons</a></li>	
-							<li><a href="icons_themify.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Themify Icons</a></li>
-							<li><a href="icons_simpleline.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Simple Line Icons</a></li>
-							<li><a href="icons_cryptocoins.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Cryptocoins Icons</a></li>
-							<li><a href="icons_flag.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Flag Icons</a></li>
-							<li><a href="icons_weather.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Weather Icons</a></li>
-						</ul>
-					</li>
-					<li><a href="ui_ribbons.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Ribbons</a></li>
-					<li><a href="ui_sliders.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Sliders</a></li>
-					<li><a href="ui_typography.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Typography</a></li>
-					<li><a href="ui_tab.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Tabs</a></li>
-					<li><a href="ui_timeline.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Timeline</a></li>
-					<li><a href="ui_timeline_horizontal.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Horizontal Timeline</a></li>
-					<li class="treeview">
-						<a href="#">
-							<i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Components
-							<span class="pull-right-container">
-								<i class="fa fa-angle-right pull-right"></i>
-							</span>
-						</a>
-						<ul class="treeview-menu">
-							<li><a href="component_bootstrap_switch.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Bootstrap Switch</a></li>
-							<li><a href="component_date_paginator.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Date Paginator</a></li>
-							<li><a href="component_media_advanced.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Advanced Medias</a></li>
-							<li><a href="component_rangeslider.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Range Slider</a></li>
-							<li><a href="component_rating.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Ratings</a></li>
-							<li><a href="component_animations.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Animations</a></li>
-							<li><a href="extension_fullscreen.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Fullscreen</a></li>
-							<li><a href="extension_pace.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Pace</a></li>
-							<li><a href="component_nestable.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Nestable</a></li>
-							<li><a href="component_portlet_draggable.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Draggable Portlets</a></li>	
-						</ul>
-					</li>  
-				  </ul>
-				</li>			
-				<li class="treeview">
-				  <a href="#">
-					<i class="icon-File"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
-					<span>Forms & Tables</span>
-					<span class="pull-right-container">
-					  <i class="fa fa-angle-right pull-right"></i>
-					</span>
-				  </a>					
-				  <ul class="treeview-menu">					
-					<li class="treeview">
-						<a href="#">
-							<i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Forms
-							<span class="pull-right-container">
-								<i class="fa fa-angle-right pull-right"></i>
-							</span>
-						</a>
-						<ul class="treeview-menu">
-							<li><a href="forms_advanced.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Form Elements</a></li>
-							<li><a href="forms_general.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Form Layout</a></li>
-							<li><a href="forms_wizard.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Form Wizard</a></li>	
-							<li><a href="forms_validation.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Form Validation</a></li>
-							<li><a href="forms_mask.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Formatter</a></li>
-							<li><a href="forms_xeditable.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Xeditable Editor</a></li>
-							<li><a href="forms_dropzone.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Dropzone</a></li>
-							<li><a href="forms_code_editor.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Code Editor</a></li>
-							<li><a href="forms_editors.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Editor</a></li>
-							<li><a href="forms_editor_markdown.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Markdown</a></li>
-						</ul>
-					</li> 		
-					<li class="treeview">
-						<a href="#">
-							<i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Tables
-							<span class="pull-right-container">
-								<i class="fa fa-angle-right pull-right"></i>
-							</span>
-						</a>
-						<ul class="treeview-menu">
-							<li><a href="tables_simple.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Simple tables</a></li>
-							<li><a href="tables_data.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Data tables</a></li>
-							<li><a href="tables_editable.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Editable Tables</a></li>
-							<li><a href="tables_color.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Table Color</a></li>
-						</ul>
-					</li> 					
+				  <ul class="treeview-menu">
+					<li><a href="#"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>预留功能</a></li>
+
 				  </ul>
 				</li>
-				<li class="treeview">
-				  <a href="#">
-					<i class="icon-Chart-pie"><span class="path1"></span><span class="path2"></span></i>
-					<span>Charts</span>
-					<span class="pull-right-container">
-					  <i class="fa fa-angle-right pull-right"></i>
-					</span>
-				  </a>
-				  <ul class="treeview-menu">
-					<li><a href="charts_chartjs.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>ChartJS</a></li>
-					<li><a href="charts_flot.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Flot</a></li>
-					<li><a href="charts_inline.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Inline charts</a></li>
-					<li><a href="charts_morris.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Morris</a></li>
-					<li><a href="charts_peity.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Peity</a></li>
-					<li><a href="charts_chartist.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Chartist</a></li>
-					<li><a href="charts_c3_axis.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Axis Chart</a></li>
-					<li><a href="charts_c3_bar.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Bar Chart</a></li>
-					<li><a href="charts_c3_data.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Data Chart</a></li>
-					<li><a href="charts_c3_line.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Line Chart</a></li>
-					<li><a href="charts_echarts_basic.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Basic Charts</a></li>
-					<li><a href="charts_echarts_bar.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Bar Chart</a></li>
-					<li><a href="charts_echarts_pie_doughnut.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Pie & Doughnut Chart</a></li>
-				  </ul>
-				</li> 
-				<li class="header">COLLECTIONS</li>
-				<li class="treeview">
-				  <a href="#">
-					<i class="icon-Library"><span class="path1"></span><span class="path2"></span></i>
-					<span>Widgets</span>
-					<span class="pull-right-container">
-					  <i class="fa fa-angle-right pull-right"></i>
-					</span>
-				  </a>
-				  <ul class="treeview-menu">
-					<li><a href="widgets_blog.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Blog</a></li>
-					<li><a href="widgets_chart.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Chart</a></li>
-					<li><a href="widgets_list.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>List</a></li>
-					<li><a href="widgets_social.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Social</a></li>
-					<li><a href="widgets_statistic.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Statistic</a></li>
-					<li><a href="widgets_weather.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Weather</a></li>
-					<li><a href="widgets.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Widgets</a></li>
-					<li><a href="email_index.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Emails</a></li>					  	
-					<li class="treeview">
-						<a href="#">
-							<i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Maps
-							<span class="pull-right-container">
-								<i class="fa fa-angle-right pull-right"></i>
-							</span>
-						</a>
-						<ul class="treeview-menu">
-							<li><a href="map_google.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Google Map</a></li>
-							<li><a href="map_vector.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Vector Map</a></li>
-						</ul>
-					</li>					  	
-					<li class="treeview">
-						<a href="#">
-							<i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Modals
-							<span class="pull-right-container">
-								<i class="fa fa-angle-right pull-right"></i>
-							</span>
-						</a>
-						<ul class="treeview-menu">
-							<li><a href="component_modals.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Modals</a></li>
-							<li><a href="component_sweatalert.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Sweet Alert</a></li>
-							<li><a href="component_notification.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Toastr</a></li>
-						</ul>
-					</li>
-				  </ul>
-				</li> 				 
-				<li class="treeview">
-				  <a href="#">
-					<i class="icon-Cart"><span class="path1"></span><span class="path2"></span></i>
-					<span>Ecommerce</span>
-					<span class="pull-right-container">
-					  <i class="fa fa-angle-right pull-right"></i>
-					</span>
-				  </a>
-				  <ul class="treeview-menu">
-					<li><a href="ecommerce_products.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Products</a></li>
-					<li><a href="ecommerce_cart.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Products Cart</a></li>
-					<li><a href="ecommerce_products_edit.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Products Edit</a></li>
-					<li><a href="ecommerce_details.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Product Details</a></li>
-					<li><a href="ecommerce_orders.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Product Orders</a></li>
-					<li><a href="ecommerce_checkout.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Products Checkout</a></li>
-				  </ul>
-				</li>  		
-				<li class="treeview">
-				  <a href="#">
-					<i class="icon-User"><span class="path1"></span><span class="path2"></span></i>
-					<span>Pages</span>
-					<span class="pull-right-container">
-					  <i class="fa fa-angle-right pull-right"></i>
-					</span>
-				  </a>
-				  <ul class="treeview-menu">
-					<li><a href="invoice.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Invoice</a></li>
-					<li><a href="invoicelist.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Invoice List</a></li>	
-					<li><a href="extra_app_ticket.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Support Ticket</a></li>
-					<li><a href="extra_profile.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>User Profile</a></li>
-					<li><a href="contact_userlist_grid.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Userlist Grid</a></li>
-					<li><a href="contact_userlist.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Userlist</a></li>	
-					<li><a href="sample_faq.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>FAQs</a></li>
-					<li><a href="sample_blank.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Blank</a></li>
-					<li><a href="sample_coming_soon.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Coming Soon</a></li>
-					<li><a href="sample_custom_scroll.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Custom Scrolls</a></li>
-					<li><a href="sample_gallery.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Gallery</a></li>
-					<li><a href="sample_lightbox.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Lightbox Popup</a></li>
-					<li><a href="sample_pricing.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Pricing</a></li>
-				  </ul>
-				</li>
-				<li class="header">LOGIN & ERROR </li>
-				<li class="treeview">
-				  <a href="#">
-					<i class="icon-Chat-locked"><span class="path1"></span><span class="path2"></span></i>
-					<span>Authentication</span>
-					<span class="pull-right-container">
-					  <i class="fa fa-angle-right pull-right"></i>
-					</span>
-				  </a>
-				  <ul class="treeview-menu">
-					<li><a href="auth_login.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Login</a></li>
-					<li><a href="auth_register.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Register</a></li>
-					<li><a href="auth_lockscreen.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Lockscreen</a></li>
-					<li><a href="auth_user_pass.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Recover password</a></li>	
-				  </ul>
-				</li>
-				<li class="treeview">
-				  <a href="#">
-					<i class="icon-Chat-check"><span class="path1"></span><span class="path2"></span></i>
-					<span>Miscellaneous</span>
-					<span class="pull-right-container">
-					  <i class="fa fa-angle-right pull-right"></i>
-					</span>
-				  </a>
-				  <ul class="treeview-menu">
-					<li><a href="error_404.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Error 404</a></li>
-					<li><a href="error_500.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Error 500</a></li>
-					<li><a href="error_maintenance.html"><i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>Maintenance</a></li>	
-				  </ul>
-				</li>	 	     
 			  </ul>
 		  </div>
 		</div>
     </section>
 	<div class="sidebar-footer">
 		<a href="javascript:void(0)" class="link" data-toggle="tooltip" title="" data-original-title="Settings" aria-describedby="tooltip92529"><span class="icon-Settings-2"></span></a>
-		<a href="mailbox.html" class="link" data-toggle="tooltip" title="" data-original-title="Email"><span class="icon-Mail"></span></a>
+		<a href="#" class="link" data-toggle="tooltip" title="" data-original-title="Email"><span class="icon-Mail"></span></a>
 		<a href="javascript:void(0)" class="link" data-toggle="tooltip" title="" data-original-title="Logout"><span class="icon-Lock-overturning"><span class="path1"></span><span class="path2"></span></span></a>
 	</div>
   </aside>
@@ -501,13 +250,13 @@
 							<div class="flex-grow-1 p-30 flex-grow-1 bg-img dask-bg bg-none-md" style="background-position: right bottom; background-size: auto 100%; background-image: url(static/image/custom-1.svg)">
 								<div class="row">
 									<div class="col-12 col-xl-7">
-										<h2>Welcome back, <strong>John!</strong></h2>
+										<h2>欢迎光临, <strong>后台!</strong></h2>
 
 										<p class="text-dark my-10 font-size-16">
-											Your students complated <strong class="text-warning">80%</strong> of the tasks.
+											后台只做API远程初始化 <strong class="text-warning">初始化</strong> 后无其他用途.
 										</p>
 										<p class="text-dark my-10 font-size-16">
-											Progress is <strong class="text-warning">very good!</strong>
+											后台暂无管理功能 <strong class="text-warning">不要将此后台提供给他人</strong>
 										</p>
 									</div>
 									<div class="col-12 col-xl-5"></div>
@@ -516,122 +265,35 @@
 						</div>
 					</div>
 					<div class="row">
+            <div class="col-12 col-xl-6">
+
+              <div class="box">
+                <div class="box-header with-border">
+                  <h4 class="box-title">初始化区</h4>
+                </div>
+                <div class="box-body">
+
+      <div class="" id="remote_verify" style="display:none">
+          <img src="" data-step="0" class="align-self-end" style="max-width: 100%; align-self: flex-end !important; line-height: 1; color: rgb(51, 51, 51); user-select: none; text-align: center; box-sizing: inherit; padding: 0; outline: 0; font-weight: inherit; font-style: inherit; font-family: inherit; font-size: 100%; vertical-align: baseline; position: relative; overflow: hidden; width: 152px; height: 152px; margin: 28px 80px; border: 0; background-size: 100% 100%;" alt="">
+          <div class="fc-left" style="text-align: center;"><div class="btn-group">
+          <button type="button" class="fc-prev-button btn btn-primary fc-corner-left" onclick="transform(false)" aria-label="prev"><span class="fc-icon fc-icon-left-single-arrow"></span></button>
+          <button type="button" class="fc-next-button btn btn-primary fc-corner-right" onclick="transform(true)"  aria-label="next"><span class="fc-icon fc-icon-right-single-arrow"></span></button></div>
+        </div>
+                  <div style="text-align: center;">
+        <a href="#" class="btn btn-danger-light" onclick="submit_remote_verify()">提交百度验证-初始化登陆</a>
+        </div>
+        </div>
+                </div>
+              </div>
+              </div>
+
 						<div class="col-12 col-xl-6">
 							<div class="box">
 								<div class="box-header with-border">
-									<h4 class="box-title">Students Progress </h4>
+									<h4 class="box-title">请求次数</h4>
 									<ul class="box-controls pull-right d-md-flex d-none">
 									  <li class="dropdown">
-										<button class="btn btn-primary px-10 " data-toggle="dropdown" href="#">View List</button>
-									  </li>
-									</ul>
-								</div>
-								<div class="box-body">
-									<div class="d-flex align-items-center mb-30 gap-items-3 justify-content-between">
-										<div class="d-flex align-items-center font-weight-500">
-											<div class="mr-15 w-50 d-table">
-												<img src="static/picture/avatar-1.png" class="avatar avatar-lg rounded10 bg-primary-light" alt="">
-											</div>
-											<div>
-												<a href="#" class="text-dark hover-primary mb-5 d-block font-size-16">Amelia</a>
-												<div class="w-200">
-													<div class="progress progress-sm mb-0">
-														<div class="progress-bar progress-bar-primary progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%">
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>
-										<div class="text-right">
-											<h5 class="font-weight-600 mb-0 badge badge-pill badge-primary">75%</h5>
-										</div>
-									</div>
-									<div class="d-flex align-items-center mb-30 gap-items-3 justify-content-between">
-										<div class="d-flex align-items-center font-weight-500">
-											<div class="mr-15 w-50 d-table">
-												<img src="static/picture/avatar-2.png" class="avatar avatar-lg rounded10 bg-primary-light" alt="">
-											</div>
-											<div>
-												<a href="#" class="text-dark hover-primary mb-5 d-block font-size-16">Johen</a>
-												<div class="w-200">
-													<div class="progress progress-sm mb-0">
-														<div class="progress-bar progress-bar-warning progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100" style="width: 64%">
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>
-										<div class="text-right">
-											<h5 class="font-weight-600 mb-0 badge badge-pill badge-warning">64%</h5>
-										</div>
-									</div>
-									<div class="d-flex align-items-center mb-30 gap-items-3 justify-content-between">
-										<div class="d-flex align-items-center font-weight-500">
-											<div class="mr-15 w-50 d-table">
-												<img src="static/picture/avatar-1.png" class="avatar avatar-lg rounded10 bg-primary-light" alt="">
-											</div>
-											<div>
-												<a href="#" class="text-dark hover-primary mb-5 d-block font-size-16">Micheal</a>
-												<div class="w-200">
-													<div class="progress progress-sm mb-0">
-														<div class="progress-bar progress-bar-info progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="59" aria-valuemin="0" aria-valuemax="100" style="width: 59%">
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>
-										<div class="text-right">
-											<h5 class="font-weight-600 mb-0 badge badge-pill badge-info">59%</h5>
-										</div>
-									</div>
-									<div class="d-flex align-items-center mb-30 gap-items-3 justify-content-between">
-										<div class="d-flex align-items-center font-weight-500">
-											<div class="mr-15 w-50 d-table">
-												<img src="static/picture/avatar-1.png" class="avatar avatar-lg rounded10 bg-primary-light" alt="">
-											</div>
-											<div>
-												<a href="#" class="text-dark hover-primary mb-5 d-block font-size-16">Amanda</a>
-												<div class="w-200">
-													<div class="progress progress-sm mb-0">
-														<div class="progress-bar progress-bar-danger progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 45%">
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>
-										<div class="text-right">
-											<h5 class="font-weight-600 mb-0 badge badge-pill badge-danger">45%</h5>
-										</div>
-									</div>
-									<div class="d-flex align-items-center gap-items-3 justify-content-between">
-										<div class="d-flex align-items-center font-weight-500">
-											<div class="mr-15 w-50 d-table">
-												<img src="static/picture/avatar-1.png" class="avatar avatar-lg rounded10 bg-primary-light" alt="">
-											</div>
-											<div>
-												<a href="#" class="text-dark hover-primary mb-5 d-block font-size-16">Tyler</a>
-												<div class="w-200">
-													<div class="progress progress-sm mb-0">
-														<div class="progress-bar progress-bar-primary progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 20%">
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>
-										<div class="text-right">
-											<h5 class="font-weight-600 mb-0 badge badge-pill badge-primary">20%</h5>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-12 col-xl-6">
-							<div class="box">
-								<div class="box-header with-border">
-									<h4 class="box-title">Working Hours</h4>
-									<ul class="box-controls pull-right d-md-flex d-none">
-									  <li class="dropdown">
-										<button class="dropdown-toggle btn btn-warning-light px-10" data-toggle="dropdown" href="#">Today</button>										  
+										<button class="dropdown-toggle btn btn-warning-light px-10" data-toggle="dropdown" href="#">Today</button>
 										<div class="dropdown-menu dropdown-menu-right">
 										  <a class="dropdown-item active" href="#">Today</a>
 										  <a class="dropdown-item" href="#">Yesterday</a>
@@ -657,7 +319,7 @@
 								<div class="box-body d-flex p-0">
 									<div class="flex-grow-1 bg-danger p-30 flex-grow-1 bg-img" style="background-position: calc(100% + 0.5rem) bottom; background-size: auto 100%; background-image: url(static/image/custom-3.svg)">
 
-										<h4 class="font-weight-400">User Activity</h4>
+										<h4 class="font-weight-400">管理用户</h4>
 
 										<p class="my-10 font-size-16">
 											Grow marketing &amp; sales<br>through product.
@@ -673,7 +335,7 @@
 								<div class="box-body d-flex p-0">
 								<div class="flex-grow-1 bg-primary p-30 flex-grow-1 bg-img" style="background-position: calc(100% + 0.5rem) bottom; background-size: auto 100%; background-image: url(static/image/custom-4.svg)">
 
-									<h4 class="font-weight-400">Based On</h4>
+									<h4 class="font-weight-400">档案库</h4>
 
 									<div class="mt-5">
 										<div class="d-flex mb-10 font-size-16">
@@ -696,238 +358,80 @@
 							</div>
 						</div>
 					</div>
-					<div class="box bg-transparent no-shadow mb-0">
-						<div class="box-header no-border">
-							<h4 class="box-title">Media Files</h4>							
-							<div class="box-controls pull-right d-md-flex d-none">
-							  <a href="#">View All</a>
-							</div>
-						</div>
-					</div>
-					<div class="box">
-						<div class="box-body py-0">
-							<div class="table-responsive">
-								<table class="table no-border mb-0">
-									<tbody>
-										<tr>
-											<td>
-												<div class="bg-danger h-50 w-50 l-h-50 rounded text-center">
-												  <p class="mb-0 font-size-20 font-weight-600">A1</p>
-												</div>
-											</td>
-											<td class="font-weight-600">Biology Course</td>
-											<td class="text-fade">StarterReplacement.pdf</td>
-											<td class="font-weight-500"><span class="badge badge-sm badge-dot badge-warning mr-10"></span>Only view</td>
-											<td class="text-fade">78 members</td>
-											<td class="font-weight-600">47 MB</td>
-										</tr>
-										<tr>
-											<td>
-												<div class="bg-info h-50 w-50 l-h-50 rounded text-center">
-												  <p class="mb-0 font-size-20 font-weight-600">B1</p>
-												</div>
-											</td>
-											<td class="font-weight-600">Contemporary Art</td>
-											<td class="text-fade">Loremipsum.doc</td>
-											<td class="font-weight-500 text-warning"><span class="badge badge-sm badge-dot badge-warning mr-10"></span>Edit available</td>
-											<td class="text-fade">78 members</td>
-											<td class="font-weight-600">78 MB</td>
-										</tr>
-										<tr>
-											<td>
-												<div class="bg-primary h-50 w-50 l-h-50 rounded text-center">
-												  <p class="mb-0 font-size-20 font-weight-600">C1</p>
-												</div>
-											</td>
-											<td class="font-weight-600">Programming Language</td>
-											<td class="text-fade">phpcore.mp3</td>
-											<td class="font-weight-500"><span class="badge badge-sm badge-dot badge-primary mr-10"></span>Only view</td>
-											<td class="text-fade">48 members</td>
-											<td class="font-weight-600">12 MB</td>
-										</tr>
-										<tr>
-											<td>
-												<div class="bg-success h-50 w-50 l-h-50 rounded text-center">
-												  <p class="mb-0 font-size-20 font-weight-600">A2</p>
-												</div>
-											</td>
-											<td class="font-weight-600">Geometry Course</td>
-											<td class="text-fade">dummyabz.pdf</td>
-											<td class="font-weight-500"><span class="badge badge-sm badge-dot badge-primary mr-10"></span>Only view</td>
-											<td class="text-fade">24 members</td>
-											<td class="font-weight-600">18 MB</td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>										
 				</div>
 				<div class="col-xl-4 col-12">
 					<div class="box">
-						<div class="box-body">							
-							<div class="box no-shadow mb-0">
-								<div class="box-body px-0 pt-0">
-									<div id="calendar" class="dask evt-cal min-h-400"></div>
-								</div>
-							</div>
-					
+						<div class="box-body">
+
 							<div class="box no-shadow mb-0 px-10">
 								<div class="box-header no-border">
-									<h4 class="box-title">Lessons</h4>							
+									<h4 class="box-title">接口说明</h4>
 									<div class="box-controls pull-right d-md-flex d-none">
-									  <a href="#">View All</a>
+									  <a href="#">所有数据</a>
 									</div>
 								</div>
 							</div>
 							<div class="px-10">
 								<div class="box bt-5 border-danger rounded">
-									<div class="box-body">	
-										<div class="flex-grow-1">	
-											<div class="d-flex align-items-center pr-2 justify-content-between">							
+									<div class="box-body">
+										<div class="flex-grow-1">
+											<div class="d-flex align-items-center pr-2 justify-content-between">
 												<h4 class="font-weight-500">
-													Programming
+													请求地址:http://api.gongying.love/api
 												</h4>
-												<div class="dropdown">
-													<a data-toggle="dropdown" href="#" class="px-10 pt-5"><i class="ti-more-alt"></i></a>
-													<div class="dropdown-menu dropdown-menu-right">
-													  <a class="dropdown-item" href="#"><i class="ti-import"></i> Import</a>
-													  <a class="dropdown-item" href="#"><i class="ti-export"></i> Export</a>
-													  <a class="dropdown-item" href="#"><i class="ti-printer"></i> Print</a>
-													  <div class="dropdown-divider"></div>
-													  <a class="dropdown-item" href="#"><i class="ti-settings"></i> Settings</a>
-													</div>
-												</div>						
 											</div>
 											<p class="font-size-16">
-												Every Day 10am to 11am
+                        请求类型：GET
 											</p>
-										</div>							
-										<div class="d-flex align-items-center justify-content-between mt-10">
-											<div class="d-flex">
-												<a href="#" class="mr-15 bg-lightest h-50 w-50 l-h-50 rounded-circle text-center overflow-hidden">
-													<img src="static/picture/avatar-1.png" class="h-50 align-self-end" alt="">
-												</a>
-												<a href="#" class="mr-15 bg-lightest h-50 w-50 l-h-50 rounded-circle text-center overflow-hidden">
-													<img src="static/picture/avatar-3.png" class="h-50 align-self-end" alt="">
-												</a>
-												<a href="#" class="mr-15 bg-lightest h-50 w-50 l-h-50 rounded-circle text-center overflow-hidden">
-													<img src="static/picture/avatar-4.png" class="h-50 align-self-end" alt="">
-												</a>
-											</div>
-											<button type="button" class="waves-effect waves-circle btn btn-circle btn-dark"><i class="mdi mdi-plus"></i></button>
+											<p class="font-size-16">
+												请求参数：datatypes<br />
+                        <span class="text-fade">支持类型：shop_score [返回：店铺评分数据]</span><br />
+                        <span class="text-fade">支持类型：smart_business_opportunity [返回：智慧商机数据]</span><br />
+                        <span class="text-fade">可以两者并用,如:shop_score,smart_business_opportunity</span>
+											</p>
+											<p class="font-size-16">
+												请求参数：username<br />
+                        <span class="text-fade">需要请求的用户名,如:zsw100023649</span><br />
+											</p>
 										</div>
-									</div>					
+									</div>
 								</div>
 								<div class="box bt-5 border-primary rounded">
-									<div class="box-body">	
-										<div class="flex-grow-1">	
-											<div class="d-flex align-items-center pr-2 justify-content-between">							
+									<div class="box-body">
+										<div class="flex-grow-1">
+											<div class="d-flex align-items-center pr-2 justify-content-between">
 												<h4 class="font-weight-500">
-													Core Language
+													示例请求：
 												</h4>
-												<div class="dropdown">
-													<a data-toggle="dropdown" href="#" class="px-10 pt-5"><i class="ti-more-alt"></i></a>
-													<div class="dropdown-menu dropdown-menu-right">
-													  <a class="dropdown-item" href="#"><i class="ti-import"></i> Import</a>
-													  <a class="dropdown-item" href="#"><i class="ti-export"></i> Export</a>
-													  <a class="dropdown-item" href="#"><i class="ti-printer"></i> Print</a>
-													  <div class="dropdown-divider"></div>
-													  <a class="dropdown-item" href="#"><i class="ti-settings"></i> Settings</a>
-													</div>
-												</div>						
 											</div>
 											<p class="font-size-16">
-												Every Day 12pm to 01pm
+												http://api.gongying.love/api?datatypes=shop_score,smart_business_opportunity&username=zsw100023649
 											</p>
-										</div>							
-										<div class="d-flex align-items-center justify-content-between mt-10">
-											<div class="d-flex">
-												<a href="#" class="mr-15 bg-lightest h-50 w-50 l-h-50 rounded-circle text-center overflow-hidden">
-													<img src="static/picture/avatar-2.png" class="h-50 align-self-end" alt="">
-												</a>
-												<a href="#" class="mr-15 bg-lightest h-50 w-50 l-h-50 rounded-circle text-center overflow-hidden">
-													<img src="static/picture/avatar-5.png" class="h-50 align-self-end" alt="">
-												</a>
-												<a href="#" class="mr-15 bg-lightest h-50 w-50 l-h-50 rounded-circle text-center overflow-hidden">
-													<img src="static/picture/avatar-6.png" class="h-50 align-self-end" alt="">
-												</a>
-											</div>
-											<button type="button" class="waves-effect waves-circle btn btn-circle btn-dark"><i class="mdi mdi-plus"></i></button>
-										</div>
-									</div>					
-								</div>
-							</div>
-					
-							<div class="box no-shadow mb-0 px-10">
-								<div class="box-header no-border">
-									<h4 class="box-title">Lessons</h4>							
-									<div class="box-controls pull-right d-md-flex d-none">
-									  <a href="#">View All</a>
-									</div>
-								</div>
-							</div>
-							<div class="px-10">
-								<div class="box mb-15">
-									<div class="box-body">
-										<div class="d-flex align-items-center justify-content-between">
-											<div class="d-flex align-items-center">
-												<div class="mr-15 bg-warning h-50 w-50 l-h-60 rounded text-center">
-													<span class="icon-Book-open font-size-24"><span class="path1"></span><span class="path2"></span></span>
-												</div>
-												<div class="d-flex flex-column font-weight-500">
-													<a href="#" class="text-dark hover-primary mb-1 font-size-16">Informatic Course</a>
-													<span class="text-fade">Johen Doe, 19 April</span>
-												</div>
-											</div>
-											<a href="#">
-												<span class="icon-Arrow-right font-size-24"><span class="path1"></span><span class="path2"></span></span>
-											</a>
-										</div>
-									</div>
-								</div>
-								<div class="box mb-15">
-									<div class="box-body">
-										<div class="d-flex align-items-center justify-content-between">
-											<div class="d-flex align-items-center">
-												<div class="mr-15 bg-primary h-50 w-50 l-h-60 rounded text-center">
-													<span class="icon-Mail font-size-24"></span>
-												</div>
-												<div class="d-flex flex-column font-weight-500">
-													<a href="#" class="text-dark hover-primary mb-1 font-size-16">Live Drawing</a>
-													<span class="text-fade">Micak Doe, 12 June</span>
-												</div>
-											</div>
-											<a href="#">
-												<span class="icon-Arrow-right font-size-24"><span class="path1"></span><span class="path2"></span></span>
-											</a>
-										</div>
-									</div>
-								</div>
-								<div class="box mb-0">
-									<div class="box-body">
-										<div class="d-flex align-items-center justify-content-between">
-											<div class="d-flex align-items-center">
-												<div class="mr-15 bg-danger h-50 w-50 l-h-60 rounded text-center">
-													<span class="icon-Book-open font-size-24"><span class="path1"></span><span class="path2"></span></span>
-												</div>
-												<div class="d-flex flex-column font-weight-500">
-													<a href="#" class="text-dark hover-primary mb-1 font-size-16">Contemporary Art</a>
-													<span class="text-fade">Potar doe, 27 July</span>
-												</div>
-											</div>
-											<a href="#">
-												<span class="icon-Arrow-right font-size-24"><span class="path1"></span><span class="path2"></span></span>
-											</a>
+											<p class="font-size-16">
+                        javascript代码：<br />
+                        <code>
+                        let data = {<br />
+                        &nbsp;&nbsp;datatypes:'shop_score,smart_business_opportunity',<br />
+                        &nbsp;&nbsp;username:'zsw100023649'<br />
+                        }<br />
+                        $.get('http://api.gongying.love/api',data,function(data){<br />
+                        &nbsp;&nbsp;if(data.message == 'successfully get data'){<br />
+                        &nbsp;&nbsp;&nbsp;&nbsp;console.log(data.data)<br />
+                        &nbsp;&nbsp;}<br />
+                        })
+                      </code>
+											</p>
 										</div>
 									</div>
 								</div>
 							</div>
-							
+
+
+
 						</div>
 					</div>
 				</div>
-				
+
 			</div>
 		</section>
 		<!-- /.content -->
@@ -945,12 +449,12 @@
 		  </li>
 		</ul>
     </div>
-	  &copy; 2020 <a href="javascript:;">Multipurpose Themes</a>. All Rights Reserved.
+	  &copy; 2022 <a href="javascript:;">开发者wx:aixing1996</a>. 售后请联系.
   </footer>
 
   <!-- Control Sidebar -->
   <aside class="control-sidebar">
-	  
+
 	<div class="rpanel-title"><span class="pull-right btn btn-circle btn-danger"><i class="ion ion-close text-white" data-toggle="control-sidebar"></i></span> </div>  <!-- Create the tabs -->
     <ul class="nav nav-tabs control-sidebar-tabs">
       <li class="nav-item"><a href="#control-sidebar-home-tab" data-toggle="tab" class="active"><i class="mdi mdi-message-text"></i></a></li>
@@ -963,7 +467,7 @@
           <div class="flexbox">
 			<a href="javascript:void(0)" class="text-grey">
 				<i class="ti-more"></i>
-			</a>	
+			</a>
 			<p>Users</p>
 			<a href="javascript:void(0)" class="text-right text-grey"><i class="ti-plus"></i></a>
 		  </div>
@@ -1021,8 +525,8 @@
 				<p>In posuere tortor vel...</p>
 				  <span>42 min ago</span>
 			  </div>
-			</div>			
-			
+			</div>
+
 			<div class="media py-10 px-0">
 			  <a class="avatar avatar-lg status-success" href="#">
 				<img src="static/picture/1.jpg" alt="...">
@@ -1074,7 +578,7 @@
 				  <span>42 min ago</span>
 			  </div>
 			</div>
-			  
+
 		  </div>
 
       </div>
@@ -1084,7 +588,7 @@
           <div class="flexbox">
 			<a href="javascript:void(0)" class="text-grey">
 				<i class="ti-more"></i>
-			</a>	
+			</a>
 			<p>Todo List</p>
 			<a href="javascript:void(0)" class="text-right text-grey"><i class="ti-plus"></i></a>
 		  </div>
@@ -1211,15 +715,15 @@
     </div>
   </aside>
   <!-- /.control-sidebar -->
-  
+
   <!-- Add the sidebar's background. This div must be placed immediately after the control sidebar -->
   <div class="control-sidebar-bg"></div>
-  
+
 </div>
 <!-- ./wrapper -->
-	
+
 	<!-- ./side demo panel -->
-	<div class="sticky-toolbar">	    
+	<div class="sticky-toolbar">
 	    <a href="#" data-toggle="tooltip" data-placement="left" title="Buy Now" class="waves-effect waves-light btn btn-success btn-flat mb-5 btn-sm" target="_blank">
 			<span class="icon-Money"><span class="path1"></span><span class="path2"></span></span>
 		</a>
@@ -1231,7 +735,7 @@
 		</a>
 	</div>
 	<!-- Sidebar -->
-		
+
 	<div id="chat-box-body">
 		<div id="chat-circle" class="waves-effect waves-circle btn btn-circle btn-lg btn-warning l-h-70">
             <div id="chat-overlay"></div>
@@ -1265,7 +769,7 @@
                         <span class="icon-Question-circle mr-15"><span class="path1"></span><span class="path2"></span></span>
                         Help</a>
 					<a class="dropdown-item font-size-16" href="#">
-                        <span class="icon-Notifications mr-15"><span class="path1"></span><span class="path2"></span></span> 
+                        <span class="icon-Notifications mr-15"><span class="path1"></span><span class="path2"></span></span>
                         Privacy</a>
                   </div>
                 </div>
@@ -1279,11 +783,11 @@
                 <div class="chat-box-toggle">
                     <button id="chat-box-toggle" class="waves-effect waves-circle btn btn-circle btn-danger-light h-40 w-40 rounded-circle l-h-45" type="button">
                       <span class="icon-Close font-size-22"><span class="path1"></span><span class="path2"></span></span>
-                    </button>                    
+                    </button>
                 </div>
             </div>
             <div class="chat-box-body">
-                <div class="chat-box-overlay">   
+                <div class="chat-box-overlay">
                 </div>
                 <div class="chat-logs">
                     <div class="chat-msg user">
@@ -1311,8 +815,8 @@
                             </span>
                         </div>
                         <div class="cm-msg-text">
-                           My name is Anne Clarc.         
-                        </div>        
+                           My name is Anne Clarc.
+                        </div>
                     </div>
                     <div class="chat-msg user">
                         <div class="d-flex align-items-center">
@@ -1330,20 +834,17 @@
                     </div>
                 </div><!--chat-log -->
             </div>
-            <div class="chat-input">      
+            <div class="chat-input">
                 <form>
                     <input type="text" id="chat-input" placeholder="Send a message...">
                     <button type="submit" class="chat-submit" id="chat-submit">
                         <span class="icon-Send font-size-22"></span>
                     </button>
-                </form>      
+                </form>
             </div>
 		</div>
 	</div>
-	
-	<!-- Page Content overlay -->
-	
-	
+
 	<!-- Vendor JS -->
 	<script src="static/js/vendors.min.js"></script>
 	<script src="static/js/chat-popup.js"></script>
@@ -1352,12 +853,68 @@
 	<script src="static/js/apexcharts.js"></script>
 	<script src="static/js/moment.min.js"></script>
 	<script src="static/js/fullcalendar.js"></script>
-	
+
 	<!-- EduAdmin App -->
 	<script src="static/js/template.js"></script>
 	<script src="static/js/dashboard.js"></script>
 	<script src="static/js/calendar.js"></script>
-	
-	<div style="display:none;"><a href="https://smalltool.github.io/">快速仿站</a></div>
+
+<script type="text/javascript" >
+	function get_login_verify(username){
+		$.get(`get_login_verify?username=${username}`,(data) => {
+      console.log(data.indexOf('https://'))
+      if (data.indexOf('https://') == 0){
+        $("#remote_verify img").attr("src",data)
+        $("#remote_verify img").data("username",username)
+        $("#remote_verify").show()
+      }else{
+        alert("请重试.")
+        window.location.reload()
+      }
+		})
+	}
+
+  function transform(m){
+    step_v = 360 / 212
+    step = $("#remote_verify img").data("step")
+    rotate = parseInt(step) * step_v
+    if(m){
+      step++
+      rotate = rotate + step_v
+    }else{
+      step--
+      rotate = rotate - step_v
+    }
+    if (step < 0){
+      step = 0
+    }
+    if (step > 212){
+      step = 212
+    }
+    console.log(step)
+    console.log(rotate)
+    $('#remote_verify img').css({"transform":`rotate(${rotate}deg)`});
+    rotate = $("#remote_verify img").data("step",step)
+  }
+
+  function submit_remote_verify(){
+    x_offset = $("#remote_verify img").data("step")
+    y_offset = 0
+    username = $("#remote_verify img").data("username")
+
+		$.get(`get_login_verify`,{
+      username,
+      x_offset,
+      y_offset
+    },(data) => {
+      if (data == "0"){
+        alert("初始化成功,该接口可以正常请求但请不要随意重启服务器。")
+      }else{
+        alert("请重试.")
+      }
+      window.location.reload()
+		})
+  }
+</script>
 </body>
 </html>

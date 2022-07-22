@@ -31,7 +31,7 @@ import pprint
 
 mimerender = mimerender.FlaskMimeRender()
 flask_app = Flask(__name__)
-
+app_self = None
 
 class B2Bworkbaidu(BaseClass):
     __isRedis = True
@@ -58,13 +58,91 @@ class B2Bworkbaidu(BaseClass):
         pass
 
     def main(self,argv):
-        # self.selenium_mode.main(self)
+        global app_self
+        app_self = self
         self.multi_browser_init()
-        # pprint.pprint(self.__config)
         e = ThreadPoolExecutor(max_workers=1)
         e.submit(self.network_list)
         # e.submit(self.active)
         pass
+
+    @flask_app.route('/manager')
+    @flask_app.route('/manager/<name>')
+    # @mimerender(
+    #     default = 'html',
+    #     xml=lambda message: '<message>%s</message>' % message,
+    #     json = lambda message: json.dumps(message),
+    #     html = lambda message: message,
+    #     txt = lambda message: message
+    # )
+    def login_manager(name=None):
+        url_for("static",filename="css/style.css",)
+        self = app_self
+        accounts = self.db_common.unserialization(self.get_account_serialization_file())
+        manager_data = {}
+        manager_data["accounts_list"] = []
+        not_login = 0
+        data_fields = self.get_config("data_fields")
+
+        for data in data_fields:
+            datatype = data["datatype"]
+            description = data["description"]
+            # {
+            #     "datatype":datatype,
+            #     "description":description
+            # }
+        #datatype
+        for account in accounts:
+            loginUser = account["login"]["loginUser"]
+            th = self.selenium_multi_process_mode.get_thread(loginUser)
+            is_login = th.login_check()
+            if not is_login:
+                not_login +=1
+            manager_data["accounts_list"].append({
+                "username":loginUser,
+                "islogin":is_login,
+            })
+        manager_data["not_login"] = not_login
+        return render_template("manager.html",manager_data=manager_data)
+
+    @flask_app.route('/get_login_verify')
+    def get_login_verify():
+        self = app_self
+        x_offset = flask_request.args.get('x_offset')
+        username = flask_request.args.get('username')
+        th = self.selenium_multi_process_mode.get_thread(username)
+        if x_offset is not None:
+            y_offset = flask_request.args.get('y_offset')
+            x_offset = int(x_offset)
+            y_offset = int(y_offset)
+            print(f" x_offset {x_offset} y_offset {y_offset}")
+            th.login_click(x_offset,y_offset)
+            time.sleep(5)
+            is_login = th.login_check()
+            if is_login:
+                return "0"
+            else:
+                return "null"
+        else:
+            html = th.get_login_verify_html()
+            return html
+
+    @flask_app.route('/api')
+    def api():
+        #使用类加载器对类附加新类
+        #用于第三方调用接口时没有附加方法的问题
+        self = app_self
+        method = flask_request.args.get('method')
+        datatypes = flask_request.args.get('datatypes')
+        username = flask_request.args.get('username')
+        password = flask_request.args.get('password')
+        th = self.selenium_multi_process_mode.get_thread(username)
+        data = th.get_data({
+            "method":method,
+            "datatypes":datatypes
+        })
+        print(f"data{data}")
+        return data
 
     def get_account_config(self,account_name,keys):
         if type(keys) == str:
@@ -132,7 +210,6 @@ class B2Bworkbaidu(BaseClass):
                 return None
 
     def init_config(self):
-        data_serialization_file = self.get_account_serialization_file()
         config = {
             # 多账号支持,会启动多线程多个浏览器, 设置在下面
             # "multiaccount_support": True,
@@ -141,9 +218,7 @@ class B2Bworkbaidu(BaseClass):
                 "isLogin": False,  # 是否已经登陆
                 "active_check": False,  # 活动检查
                 "loginURL": "https://b2bwork.baidu.com/login",
-                "loginVerifyURL": "https://b2bwork.baidu.com/login",
-                #TODO:
-                #将登陆验证改成数据的page页
+                "loginVerifyURL": "https://b2bwork.baidu.com/dashboard",
 
                 # "loginUser": "zsw100023649",
                 # "loginPwd": "Mts77066.",
@@ -199,7 +274,7 @@ class B2Bworkbaidu(BaseClass):
                     "description": "智慧商机",
                     "page": "https://b2bwork.baidu.com/service/business/index?scrollTop=0",
                     "datas_by_class": {
-                        "sentinel_selector": """//span[@class="el-tooltip"]""",
+                        "sentinel_selector": '//*[@class="el-tooltip"]',
                         "datas": [
                             {
                                 "datatype": "core_data",
@@ -229,7 +304,7 @@ class B2Bworkbaidu(BaseClass):
                 #     "data_fields": []
                 # }
                 # ],
-                self.db_common.unserialization(data_serialization_file),
+                self.db_common.unserialization(self.get_account_serialization_file()),
                 # {
                 #     "login": {
                 #         "loginUser": "zsw100023649",
@@ -291,38 +366,6 @@ class B2Bworkbaidu(BaseClass):
         else:
             return self.init_config()
 
-    @flask_app.route('/manager')
-    @flask_app.route('/manager/<name>')
-    # @mimerender(
-    #     default = 'html',
-    #     xml=lambda message: '<message>%s</message>' % message,
-    #     json = lambda message: json.dumps(message),
-    #     html = lambda message: message,
-    #     txt = lambda message: message
-    # )
-    def login_manager(name=None):
-        self = LoadModuleClass().add_module("control","b2bworkBaidu",[])
-        return render_template("manager.html")
-
-    @flask_app.route('/api')
-    def api():
-        #使用类加载器对类附加新类
-        #用于第三方调用接口时没有附加方法的问题
-        self = LoadModuleClass().add_module("control","b2bworkBaidu",[])
-        method = flask_request.args.get('method')
-        datatypes = flask_request.args.get('datatypes')
-        username = flask_request.args.get('username')
-        password = flask_request.args.get('password')
-
-        url_for("static",filename="css/style.css",)
-        data = self.get_data_from_thread({
-            "method":method,
-            "datatypes":datatypes,
-            "username":username,
-            "password":password,
-        })
-        return data
-
     def network_list(self,run_port=None):
         if run_port is not None:
             port = run_port
@@ -333,9 +376,7 @@ class B2Bworkbaidu(BaseClass):
 
     def multi_browser_init(self):
         # self.add_account_to_account(("zsw100023649","Mts77066."))
-        # self.add_account_to_account(("username0","password"))
-        # data = self.db_common.unserialization(self.get_account_serialization_file())
-        # print(f"accounts:{data}")
+        
         multiaccount_support = self.get_config("multiaccount_support")
         multiaccount_datas = self.get_config("multiaccount_datas")#本线程总支持的账号数
         config = {}
@@ -382,16 +423,6 @@ class B2Bworkbaidu(BaseClass):
         # # th.set("__config",self.get_config())
         # th.start()
         return
-
-
-    def get_data_from_thread(self,args):
-        username = args["username"]
-        # datatype = args["datatype"]
-        # password = args["password"]
-        # method = args["method"]
-        th = self.selenium_multi_process_mode.get_thread(username)
-        getdata_result = th.get_data(args)
-        return getdata_result
 
 
     def init_driver_local_test(self,html_name="index.html"):

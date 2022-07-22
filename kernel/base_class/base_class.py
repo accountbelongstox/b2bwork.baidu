@@ -11,3 +11,4 @@ class BaseClass:
 
     def __getattr__(self, item):
         return self.__dict__.get(item)
+

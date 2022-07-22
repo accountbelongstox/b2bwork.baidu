@@ -85,7 +85,6 @@ class LoadModuleClass:
             module_or_modules = {
                 module_or_modules.__class__.__name__: module_or_modules
             }
-
         if module_type_name == "common":
             kernermodules = self.__commons_class
         else:
@@ -99,12 +98,14 @@ class LoadModuleClass:
                         and \
                 module.__class__.__name__ != module_name:
                     module.__setattr__(simple_name,attach_module)
-                    if module.__dict__.get("main"):
+                    try:
                         args = {
                             "args":args,
-                            "module":module
+                            "module":module,
                         }
                         attach_module.main(args)
+                    except:
+                        continue
 
     def load_module_fram_file(self,module_name,module_path):
         spec = importlib.util.spec_from_file_location(module_name, module_path)

@@ -1,3 +1,4 @@
+import operator
 import random
 import shutil
 from kernel.base_class.base_class import *
@@ -28,9 +29,15 @@ class SeleniumMultiProcessMode(BaseClass):
     def create_thread(self, target=None, args=(), thread_id=None, thread_name=None,daemon=False):
         if thread_id == None:
             thread_id = random.random()
-        thread = SeleniumThread(target, args, thread_id, thread_name,daemon)
         LoadModuleClass().attach_module_from(self,"selenium_mode")
-        self.selenium_mode.main(thread,callback_module_name=thread_name)
+        thread = SeleniumThread(target, args, thread_id, thread_name,daemon)
+        self.selenium_mode.main(
+            {
+                "module":thread,
+                "driver_name":thread_name,
+                "headless":True
+            }
+        )
         self.__threads[thread_name] = thread
         self.__threads[thread_id] = thread
         return thread
@@ -95,7 +102,6 @@ class SeleniumThread(threading.Thread):  # 继承父类threading.Thread
         if self.target != None:
             self.target(self.args)
         else:
-            self.__driver = self.selenium_mode.get_driver()
             self.url_open_active()
         # self.selenium_mode.open_url("http://localhost")
 
@@ -112,6 +118,11 @@ class SeleniumThread(threading.Thread):  # 继承父类threading.Thread
         self.__send_args.put(send_args)
 
     def url_open_active(self):
+        # while True:
+        #     self.__driver = self.selenium_mode.get_driver()
+        #     print(f"self.__driver {self.name } -> {self.__driver}")
+        #     time.sleep(1)
+        # return
         active_period = self.__config["login"]["login_active"]["active_period"]
         while True:
             #开始活动检查标志
@@ -121,7 +132,6 @@ class SeleniumThread(threading.Thread):  # 继承父类threading.Thread
                 isLogin = self.login_check()
                 self.__config["login"]["isLogin"] = isLogin
                 if not isLogin:
-                    print(f"is not isLogin")
                     self.__config["login"]["isLogin"] = self.login_and_verify()
             if self.__config["login"]["isLogin"]:
                 self.logined_acitve()
@@ -131,21 +141,28 @@ class SeleniumThread(threading.Thread):  # 继承父类threading.Thread
             time.sleep(active_period)
 
     def login_check(self):
-        self.__driver.refresh()
+        if self.__driver is None:
+            self.__driver = self.selenium_mode.get_driver()
+        #如果有验证页，则说明已经登陆过可能已过期，则刷新
         loginVerifyURL = self.__config["login"]["loginVerifyURL"]
-        current_url = self.__driver.current_url
-        print(f"current_url {current_url}")
-        if current_url.find(loginVerifyURL) == 0:
-            print(f"loading_verify successfully.")
-            return True
+        url_exists = self.selenium_mode.find_url_from_driver_handles(loginVerifyURL)
+        print(f"login_check url_exists {url_exists}")
+        if url_exists != -1:
+            self.__driver.refresh()
+            #如果刷新过后页面依然存在，则说明未过期
+            url_exists = self.selenium_mode.find_url_from_driver_handles(loginVerifyURL)
+            if url_exists != -1:
+                return True
+            else:
+                return False
         else:
             return False
 
     def login_and_verify(self):
         self.login()
-        is_loading = self.login_verify()
+        is_login = self.login_verify_continue()
         self.login_pre()
-        return is_loading
+        return is_login
 
     def login_pre(self):
         login_pre = self.__config["login"]["login_pre"]
@@ -155,6 +172,13 @@ class SeleniumThread(threading.Thread):  # 继承父类threading.Thread
                 click_element = self.selenium_mode.find_element_wait( click_selector)
                 click_element.click()
 
+    def login_click(self,x_offset,y_offset):
+        move_to_element = self.selenium_mode.find_elements('.vcode-spin-button',is_beautifulsoup=True)
+        move_to_element = move_to_element[0][0]
+        id = move_to_element["id"]
+        id = f"#{id}"
+        self.selenium_mode.move_to_element(id,x_offset,y_offset)
+
     def login(self):
         userInput = self.__config["login"]["userInput"]
         pwdInput = self.__config["login"]["pwdInput"]
@@ -162,7 +186,7 @@ class SeleniumThread(threading.Thread):  # 继承父类threading.Thread
         loginURL = self.__config["login"]["loginURL"]
         loginUser = self.__loginUser
         loginPwd = self.__loginPwd
-        self.init_driver(loginURL)
+        self.selenium_mode.open_url_as_new_window(loginURL)
         userInputElement = self.selenium_mode.find_element_wait(userInput)
         pwdInputElement = self.selenium_mode.find_element_wait(pwdInput)
         submitElement = self.selenium_mode.find_element_wait(submit)
@@ -170,56 +194,91 @@ class SeleniumThread(threading.Thread):  # 继承父类threading.Thread
         pwdInputElement.send_keys(loginPwd)
         submitElement.click()
 
-    def login_verify(self):
+    def login_verify_continue(self):
         loginVerifyURL = self.__config["login"]["loginVerifyURL"]
-        current_url = self.__driver.current_url
-        if current_url.find(loginVerifyURL) == -1:
-            print(f"login_verify successfully.")
+        if operator.__eq__(self.__driver.current_url,loginVerifyURL):
             return True
         else:
-            print(f"login_verifing current_url:{current_url} to loginVerifyURL:{loginVerifyURL} ")
+            print(f"login_verify_continue check is :{self.__driver.current_url} to {loginVerifyURL} ")
             time.sleep(1)
-            return self.login_verify()
-
-    def init_driver(self,url,cb=None):
-        if self.__init_driver_open == True:
-            self.selenium_mode.open_url(url=url)
-            print('load_JQuery loading..')
-            self.selenium_mode.load_JQuery_wait()
-            self.__init_driver_open = False
-        else:
-            len_drivers = len(self.__driver.window_handles)
-            url_exists = False
-            for index in range(len_drivers):
-                self.__driver.switch_to.window(self.__driver.window_handles[index])
-                if self.__driver.current_url.find(url) == 0:
-                    url_exists = True
-                    print(f"init_driver found url is {self.__driver.current_url}")
-                    break
-            if not url_exists:
-                js = "window.open('{}','_blank');"
-                self.__driver.execute_script(js.format(url))
-                print(f"init_driver open url by new window for page {url}")
-                self.selenium_mode.load_JQuery_wait()
-        if cb != None: cb()
+            return self.login_verify_continue()
+    #
+    # def init_driver(self,url,cb=None):
+    #     if self.__init_driver_open == True:
+    #         self.selenium_mode.open_url(url=url)
+    #         print('load_JQuery loading..')
+    #         self.selenium_mode.load_JQuery_wait()
+    #         self.__init_driver_open = False
+    #     else:
+    #         len_drivers = len(self.__driver.window_handles)
+    #         url_exists = False
+    #         for index in range(len_drivers):
+    #             self.__driver.switch_to.window(self.__driver.window_handles[index])
+    #             if self.__driver.current_url.find(url) == 0:
+    #                 url_exists = True
+    #                 print(f"init_driver found url is {self.__driver.current_url}")
+    #                 break
+    #         if not url_exists:
+    #             js = "window.open('{}','_blank');"
+    #             self.__driver.execute_script(js.format(url))
+    #             print(f"init_driver open url by new window for page {url}")
+    #             self.selenium_mode.load_JQuery_wait()
+    #     if cb != None: cb()
 
     def logined_acitve(self):
         active_url = self.__config["login"]["login_active"]["active_url"]
         buttons = self.__config["login"]["login_active"]["buttons"]
-        self.selenium_mode.switch_to_window_by_url_and_open(active_url)
+        self.selenium_mode.open_url_as_new_window(active_url)
         for button_selector in buttons:
             button_selector = self.selenium_mode.find_element_wait(button_selector)
             button_selector.click()
+
+    def get_html_resource(self):
+        #vcode-spin-img
+        html = self.__driver.page_source
+        html += "取得滑动登陆验证距离的javascript代码"
+        return html
+
+    def get_login_verify_html(self):
+        if not self.login_check():
+            self.__driver.refresh()
+            self.login()
+        #vcode-spin-img
+        time.sleep(3)
+        selector_css = self.selenium_mode.find_element(".vcode-spin-img",is_beautifulsoup=True)
+        if len(selector_css) > 0:
+            # links = self.selenium_mode.find_element("link",is_beautifulsoup=True)
+            # link_len = len(links)
+            # current_url_parse = urlparse(self.__driver.current_url)
+            # current_url = f"{current_url_parse.scheme}://{current_url_parse.netloc}"
+            # insert_html_link_as_style = ''
+            # for index in range(link_len):
+            #     try:
+            #         link = links[index]
+            #         href = link["href"]
+            #         link["href"] = current_url + href
+            #         if os.path.splitext(link["href"])[1] == '.css':
+            #             insert_html_link_as_style += str(link)
+            #     except:
+            #         pass
+            vcode_spin_img = selector_css[0]
+            # vcode_spin_img = insert_html_link_as_style + str(vcode_spin_img)
+            vcode_spin_img = vcode_spin_img["src"]
+        else:
+            vcode_spin_img = self.selenium_mode.find_html_wait()
+        return vcode_spin_img
 
     def get_data(self,args):
         if self.__config["login"]["active_check"]:
             time.sleep(2)
             return self.get_data(args)
+        getdata_result = {}
         try:
             datatypes_str = args["datatypes"]
             datatypes = datatypes_str.split(',')
+            getdata_result["type"] = 0
+            getdata_result["message"] = "successfully get data"
         except:
-            getdata_result = {}
             # 如果不是当前token name请求，则跳过
             getdata_result["type"] = 0
             getdata_result["message"] = "no request name is datatype"
@@ -234,14 +293,14 @@ class SeleniumThread(threading.Thread):  # 继承父类threading.Thread
             method = args["method"]
 
         graspFields = self.__data_fields
+        fields_data = []
         pprint.pprint(graspFields)
-        getdata_result = {}
         for grasp_unit in graspFields:
             datatype = grasp_unit["datatype"]
             if datatype not in datatypes:
                 continue
             page = grasp_unit["page"]
-            self.init_driver( page)
+            self.selenium_mode.open_url_as_new_window( page , loadJQuery=True)
             datas_by_class = grasp_unit["datas_by_class"]
             sentinel_selector = datas_by_class["sentinel_selector"]
             self.selenium_mode.find_elements_value_wait(sentinel_selector)
@@ -261,13 +320,11 @@ class SeleniumThread(threading.Thread):  # 继承父类threading.Thread
                             selector_name = selector_names[i]
                             selector_value = results[i]
                             get_data_unit[selector_name] = selector_value
-                        getdata_result[datatype] = {
-                            "description" : description,
+                        fields_data.append({
                             "datatype" : datatype,
+                            "description" : description,
                             "data" : get_data_unit
-                        }
+                        })
                         print(f"get_data_unit {get_data_unit}")
-        getdata_result["type"] = 0
-        getdata_result["message"] = "successfully get data"
-        getdata_result["data"] = getdata_result
+        getdata_result["data"] = fields_data
         return getdata_result
