@@ -5,6 +5,9 @@ import os
 
 class ConfigCommon(BaseClass):
 
+    def __init__(self,args):
+        pass
+
     def get_static(self,sub_dir):
         sub_dir = self.config_cfg("static",sub_dir)
         sub_dir = self.abs_dir__(sub_dir)

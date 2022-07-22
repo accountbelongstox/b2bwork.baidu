@@ -2,8 +2,7 @@ from kernel.base_class.base_class import *
 import xml.dom.minidom
 #import xml.etree.ElementTree as etree
 class XmlCommon(BaseClass):
-
-    def __init__(self):
+    def __init__(self,args):
         pass
 
     def from_string(self,string):

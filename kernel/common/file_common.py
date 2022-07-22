@@ -6,7 +6,7 @@ import pickle
 
 class FileCommon(BaseClass):
 
-    def __init__(self):
+    def __init__(self,args):
         pass
 
     def load_file(self,file_name,encoding="utf-8"):

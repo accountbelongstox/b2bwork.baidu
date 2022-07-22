@@ -4,6 +4,7 @@ import redis
 import json
 import os
 import pickle
+import operator
 
 class DbCommon(BaseClass):
     __mongodb = None
@@ -13,7 +14,7 @@ class DbCommon(BaseClass):
     __db = None
     __db_prefix = "pr_"
 
-    def __init__(self):
+    def __init__(self,args):
         pass
 
     def connect(self):
@@ -38,86 +39,37 @@ class DbCommon(BaseClass):
         return core_data_dir
 
     def serialization(self,obj,file_path=None):
-        file_path = self.get_serialization_default_dir(file_path)
+        print(f"serialization {file_path}")
+        if not ( os.path.exists(file_path) and os.path.isfile(file_path) ):
+            file_path = self.get_serialization_default_dir(file_path)
         if os.path.exists(file_path) and os.path.isfile(file_path):
             old_obj = self.unserialization(file_path)
             if type(old_obj) == dict and type(obj) == dict:
                 for k,v in obj.items():
                     old_obj[k] = v
             elif type(old_obj) == list and type(obj) == list:
-                for data in obj:
-                    if type(data) in [str,int,bool,float]:
-                        if data not in old_obj:
-                            print(f"serialization add {type(data)} as {data} in {file_path}")
-                            old_obj.append(data)
-                        else:
-                            print(f"serialization exist {type(data)} as {data} in {file_path}")
-                    if type(data) == dict:
-                        exist_in_dict = False
-                        for new_data_item in data.items():
-                            for old_item in old_obj:
-                                if type(old_item) == dict:
-                                    exist_of_item = True
-                                    for old_key,old_val in old_item.items():
-                                        if old_key not in new_data_item:
-                                            exist_of_item = False
-                                            continue
-                                        if old_val != new_data_item[old_key]:
-                                            exist_of_item = False
-                                    #对逐个对比的dict如果有一个存在
-                                    if exist_of_item == True:
-                                        exist_in_dict = exist_of_item
-                                        break
-                        if exist_in_dict != True:
-                            print(f"serialization add dict as {data} in {file_path}")
-                            old_obj.append(data)
-                        else:
-                            print(f"serialization exist dict as {data} in {file_path}")
-                    if type(data) == list:
-                        exist_in_list = False
-                        for new_data_item in data:
-                            for old_item in old_obj:
-                                if type(old_item) == list:
-                                    exist_of_item = True
-                                    for old_val in old_item:
-                                        if old_val != new_data_item:
-                                            exist_of_item = False
-                                            continue
-                                    #对逐个对比的dict如果有一个存在
-                                    if exist_of_item == True:
-                                        exist_in_list = exist_of_item
-                                        break
-                        if exist_in_list != True:
-                            print(f"serialization add list as {data} in {file_path}")
-                            old_obj.append(data)
-                        else:
-                            print(f"serialization exist list as {data} in {file_path}")
-                    if type(data) == tuple:
-                        exist_in_tuple = False
-                        for new_data_item in data:
-                            exist_of_item = True
-                            for old_item in old_obj:
-                                if type(old_item) == tuple:
-                                    if new_data_item not in old_item:
-                                        exist_of_item = False
-                                        continue
-                            #对逐个对比的dict如果有一个存在
-                            if exist_of_item == True:
-                                exist_in_tuple = exist_of_item
-                                break
-                        if exist_in_tuple != True:
-                            print(f"serialization add tuple as {data} in {file_path}")
-                            old_obj.append(data)
-                        else:
-                            print(f"serialization exist tuple as {data} in {file_path}")
+                for new_data_item in obj:
+                    exist_in_list = False
+                    for old_item in old_obj:
+                        exist_of_item = operator.eq(new_data_item, old_item)
+                        if exist_of_item == True:
+                            exist_in_list = exist_of_item
+                            break
+                    if not exist_in_list:
+                        print(f"serialization add list as {new_data_item} in {file_path}")
+                        old_obj.append(new_data_item)
+            else:
+                print(f"serialization Not supported data type: {type(obj)}")
+                old_obj = obj
             obj = old_obj
         print(f"serialization data to {file_path}")
         file = open(file_path,'wb+')
         pickle.dump(obj,file,pickle.HIGHEST_PROTOCOL)
 
     def unserialization(self,file_path=None):
-        file_path = self.get_serialization_default_dir(file_path)
         print(f"unserialization data from {file_path}")
+        if not ( os.path.exists(file_path) and os.path.isfile(file_path) ):
+            file_path = self.get_serialization_default_dir(file_path)
         if os.path.exists(file_path) and os.path.isfile(file_path):
             file = open(file_path,'rb')
             try:

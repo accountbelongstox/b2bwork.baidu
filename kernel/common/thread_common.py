@@ -6,7 +6,7 @@ import time
 class ThreadCommon(BaseClass):  # 继承父类threading.Thread
     __threads = []
 
-    def __init__(self):
+    def __init__(self,args):
         pass
 
     def create_thread(self, fn=None, args=(), thread_id=None, thread_name=None):

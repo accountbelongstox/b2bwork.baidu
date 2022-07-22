@@ -54,17 +54,19 @@ class B2Bworkbaidu(BaseClass):
     # """
 
     def __init__(self,argv):
+        # self.selenium_mode.create_single(self)
         pass
 
     def main(self,argv):
+        # self.selenium_mode.main(self)
         self.multi_browser_init()
         # pprint.pprint(self.__config)
-        e = ThreadPoolExecutor(max_workers=2)
-        # e.submit(self.network_list)
+        e = ThreadPoolExecutor(max_workers=1)
+        e.submit(self.network_list)
         # e.submit(self.active)
         pass
 
-    def get_acoount_config(self,account_name,keys):
+    def get_account_config(self,account_name,keys):
         if type(keys) == str:
             keys = [keys]
         if self.__config["multiaccount_support"] == True:
@@ -72,32 +74,48 @@ class B2Bworkbaidu(BaseClass):
             # 有多账号的时候从多账号中读配置
             # 如果多账号没有配置则读总配置
             # 账号单独配置覆盖主配置
-            config = NoneF
+            account_config = None
             print(f"account_name {account_name}")
             for account in multiaccount_datas:
                 print(f"account {account}")
-                login == account["login"]
+                login = account["login"]
                 if account_name == login["loginUser"]:
-                    config = account
-            if config == None:
-                print(f"Not found account:{account_name} in multiaccount_datas in get_acoount_set.")
+                    account_config = account
+            if account_config == None:
+                print(f"Not found account:{account_name} in multiaccount_datas in get_account_set.")
                 return None
             value_as_multiaccounts = None
             value_as_config = None
             value = None
             for key in keys:
+                exist_multiaccounts = True
                 if value_as_multiaccounts == None:
-                    value_as_multiaccounts = config[key]
+                    try:
+                        value_as_multiaccounts = account_config[key]
+                    except:
+                        exist_multiaccounts = False
                 elif key in value_as_multiaccounts:
                     value_as_multiaccounts = value_as_multiaccounts[key]
+                else:
+                    exist_multiaccounts = False
+
+                exist_config = True
                 if value_as_config == None:
                     value_as_config = self.__config[key]
                 elif key in value_as_config:
                     value_as_config = value_as_config[key]
-                if key in value_as_multiaccounts:
-                    value = value_as_multiaccounts[key]
                 else:
-                    value = value_as_config[key]
+                    exist_config = False
+
+                if exist_multiaccounts:
+                    value = value_as_multiaccounts
+                elif exist_config:
+                    value = value_as_config
+                else:
+                    print(f"key {key}")
+                    print(f"value_as_config {value_as_config}")
+                    value = None
+                    break
             return value
         else:
             #没有多账号直接从配置中读配置
@@ -110,11 +128,11 @@ class B2Bworkbaidu(BaseClass):
                         value = value[key]
                 return value
             else:
-                print(f"Not found account:{account_name} in self.__config['loginUser'] in get_acoount_set.")
+                print(f"Not found account:{account_name} in self.__config['loginUser'] in get_account_set.")
                 return None
 
     def init_config(self):
-        data_serialization_file = "b2bwork_baidu_account_data.list"
+        data_serialization_file = self.get_account_serialization_file()
         config = {
             # 多账号支持,会启动多线程多个浏览器, 设置在下面
             # "multiaccount_support": True,
@@ -122,10 +140,13 @@ class B2Bworkbaidu(BaseClass):
                 "mustLogin": True,  # 是否需要预登陆
                 "isLogin": False,  # 是否已经登陆
                 "active_check": False,  # 活动检查
-                "loadURL": "https://b2bwork.baidu.com/login?redirect=https%3A%2F%2Fb2bwork.baidu.com%2Fdashboard",
-                "loadingVerifyURL": "https://b2bwork.baidu.com/login",
-                "loginUser": "zsw100023649",
-                "loginPwd": "Mts77066.",
+                "loginURL": "https://b2bwork.baidu.com/login",
+                "loginVerifyURL": "https://b2bwork.baidu.com/login",
+                #TODO:
+                #将登陆验证改成数据的page页
+
+                # "loginUser": "zsw100023649",
+                # "loginPwd": "Mts77066.",
                 "userInput": """//*[@id="uc-common-account"]""",
                 "pwdInput": """//*[@id="ucsl-password-edit"]""",
                 "submit": "#submit-form",
@@ -143,14 +164,14 @@ class B2Bworkbaidu(BaseClass):
             },
             "data_fields": [
                 {
-                    "name": "shop_score",
+                    "datatype": "shop_score",
                     "description": "店铺评分",
                     "page": "https://b2bwork.baidu.com/dashboard",
                     "datas_by_class": {
                         "sentinel_selector": """//div[@class="shop-diagnose"]/p""",
                         "datas": [
                             {
-                                "name": "shop_score",
+                                "datatype": "shop_score",
                                 "description": "店铺评分",
                                 "selectors": [
                                     {
@@ -160,7 +181,7 @@ class B2Bworkbaidu(BaseClass):
                                 ],
                                 "attr": "value"
                             }, {
-                                "name": "commodity_management",
+                                "datatype": "commodity_management",
                                 "description": "商品管理",
                                 "selectors": [
                                     {
@@ -174,14 +195,14 @@ class B2Bworkbaidu(BaseClass):
                     }
                 },
                 {
-                    "name": "smart_business_opportunity",
+                    "datatype": "smart_business_opportunity",
                     "description": "智慧商机",
                     "page": "https://b2bwork.baidu.com/service/business/index?scrollTop=0",
                     "datas_by_class": {
                         "sentinel_selector": """//span[@class="el-tooltip"]""",
                         "datas": [
                             {
-                                "name": "core_data",
+                                "datatype": "core_data",
                                 "description": "核心数据",
                                 "selector": ".el-tooltip",
                                 "selectors": [
@@ -220,26 +241,38 @@ class B2Bworkbaidu(BaseClass):
         self.__config = config
         return self.__config
 
-    def add_account_to_account(self,args):
-        try:
-            loginUser = args[0]
-        except:
-            return None
-        try:
-            loginPwd = args[1]
-        except:
-            return None
-        try:
-            data_fields = args[2]
-        except:
-            data_fields = []
-        account_data = {
-            "loginUser":loginUser,
-            "loginPwd":loginPwd,
-            "data_fields":data_fields
-        }
-        self.db_common.serialization("b2bwork_baidu_account_data.list",account_data)
+    def get_account_serialization_file(self):
+        return "b2bwork_baidu_account_data.list"
 
+    def add_account_to_account(self,args):
+        if type(args) == tuple:
+            args = [args]
+        account_data = []
+        for account in args:
+            try:
+                loginUser = account[0]
+                loginPwd = account[1]
+            except:
+                return None
+            try:
+                data_fields = account[2]
+            except:
+                data_fields = None
+            account_item ={
+                    "login": {
+                        "loginUser": loginUser,
+                        "loginPwd": loginPwd
+                    }
+                }
+            if data_fields != None:
+                account_item["data_fields"] = data_fields
+            account_data.append(
+                account_item
+            )
+        print(f"add_account_to_account {account_data}")
+        filename = self.get_account_serialization_file()
+        self.db_common.serialization( account_data,filename)
+        return self.init_config()
 
     def get_config(self,account_name=None,keys=None):
         if self.__config == None:
@@ -254,7 +287,7 @@ class B2Bworkbaidu(BaseClass):
                 print(f"Not found {account_name} in self.__config")
                 return None
         if account_name != None and keys != None:
-            return self.get_acoount_config(account_name,keys)
+            return self.get_account_set(account_name,keys)
         else:
             return self.init_config()
 
@@ -277,11 +310,17 @@ class B2Bworkbaidu(BaseClass):
         #用于第三方调用接口时没有附加方法的问题
         self = LoadModuleClass().add_module("control","b2bworkBaidu",[])
         method = flask_request.args.get('method')
-        name = flask_request.args.get('name')
+        datatypes = flask_request.args.get('datatypes')
         username = flask_request.args.get('username')
         password = flask_request.args.get('password')
+
         url_for("static",filename="css/style.css",)
-        data = self.get_data(name)
+        data = self.get_data_from_thread({
+            "method":method,
+            "datatypes":datatypes,
+            "username":username,
+            "password":password,
+        })
         return data
 
     def network_list(self,run_port=None):
@@ -292,23 +331,16 @@ class B2Bworkbaidu(BaseClass):
         print(f'startup Flask app server. Listing port is {port}')
         flask_app.run(port=port,host="0.0.0.0")
 
-    def f(self,arg):
-        p = arg[0]
-        name = "test"
-        left, right = p
-        left.close()
-        while True:
-            try:
-                baozi = right.recv()
-                print('%s 收到包子:%s' % (name, baozi))
-            except EOFError:
-                right.close()
-                break
-
     def multi_browser_init(self):
+        # self.add_account_to_account(("zsw100023649","Mts77066."))
+        # self.add_account_to_account(("username0","password"))
+        # data = self.db_common.unserialization(self.get_account_serialization_file())
+        # print(f"accounts:{data}")
         multiaccount_support = self.get_config("multiaccount_support")
         multiaccount_datas = self.get_config("multiaccount_datas")#本线程总支持的账号数
-
+        config = {}
+        for config_k,config_v in self.__config.items():
+            config[config_k] = config_v
         # print(f"multiaccount_datas",multiaccount_datas)
         account_max_thread = 1
         if multiaccount_support == True:
@@ -317,167 +349,54 @@ class B2Bworkbaidu(BaseClass):
 
         for id in range(account_max_thread):
             account = multiaccount_datas[id]
+            # print(account)
             login = account["login"]
-            print(login)
-            loginPwd = login["loginPwd"]
             loginUser = login["loginUser"]
-            data_fields = self.get_config(account_name="test", keys="data_fields")
-
-            print(data_fields)
-            args = (loginUser,loginPwd,data_fields)
-            # th = self.selenium_multi_process_mode.create_thread(target=self.active,args=args,thread_id=id, thread_name=loginUser,)
-            # th.start()
+            # deep_key = []
+            for login_k,login_v in account.items():
+                if type(login_v) == dict:
+                    for login_k_, login_v_ in login_v.items():
+                        if type(login_v_) == dict:
+                            for login_k__, login_v__ in login_v_.items():
+                                if type(login_v__) == dict:
+                                    for login_k___, login_v___ in login_v__.items():
+                                        if type(login_v___) == dict:
+                                            for login_k____, login_v____ in login_v___.items():
+                                                # deep_key.append(login_k____)
+                                                config[login_k][login_k_][login_k__][login_k___][login_k____] = login_v____
+                                        else:config[login_k][login_k_][login_k__][login_k___] = login_v___
+                                        # deep_key.append(login_k___)
+                                else:config[login_k][login_k_][login_k__] = login_v__
+                                # deep_key.append(login_k__)
+                        else:config[login_k][login_k_] = login_v_
+                        # deep_key.append(login_k_)
+                else:config[login_k] = login_v
+                # deep_key.append(login_k)
+            # print(config)
+            #     # config[login_k] = login_v
+            # args = (config)
+            th = self.selenium_multi_process_mode.create_thread(args=config,thread_id=id, thread_name=loginUser,)
+            # th.set("__config",self.get_config())
+            th.start()
+        # th = self.selenium_multi_process_mode.create_thread(target=self.network_list, args=config,thread_name="network_list",)
+        # # th.set("__config",self.get_config())
+        # th.start()
         return
 
 
-    def active(self,args):
-        active_period = self.__config["login"]["login_active"]["active_period"]
-        while True:
-            #开始活动检查标志
-            self.__config["login"]["active_check"] = True
-            print("processing active checking.")
-            if self.__config["login"]["mustLogin"]:
-                isLogin = self.login_check(args)
-                self.__config["login"]["isLogin"] = isLogin
-                if not isLogin:
-                   self.__config["login"]["isLogin"] = self.login_and_verify()
-            if self.__config["login"]["isLogin"]:
-                self.logined_acitve()
-            #关闭活动检查标志
-            self.__config["login"]["active_check"] = False
-            #开始睡眠
-            time.sleep(active_period)
-
-
-    def get_data(self,names=None):
-        if self.__config["login"]["active_check"]:
-            time.sleep(2)
-            return self.get_data(names)
-        graspFields = self.__config["data_fields"]
-        getdata_result = {}
-        for grasp_unit in graspFields:
-            grasp_unit_name = grasp_unit["name"]
-            if names == None or grasp_unit_name not in names.split(','):
-                #如果不是当前token name请求，则跳过
-                getdata_result["type"] = 0
-                getdata_result["message"] = "no request name"
-                getdata_result["error"] = f"names is {names}"
-                getdata_result["grasp_unit_name"] = grasp_unit["name"]
-                getdata_result["test_data"] = names.split(',')
-                continue
-            page = grasp_unit["page"]
-            self.init_driver( page)
-            if "datas_by_class" in grasp_unit:
-                datas_by_class = grasp_unit["datas_by_class"]
-
-                sentinel_selector = datas_by_class["sentinel_selector"]
-                print(f"getting sentinel_data, selector is {sentinel_selector}")
-                sentinel_data = self.selenium_mode.find_elements_value_wait(self.__driver,sentinel_selector)
-                print(f" get sentinel_data successfully {sentinel_data}")
-
-                datas = datas_by_class["datas"]
-                for data in datas:
-                    selectors = data["selectors"]
-                    attr = data["attr"]
-                    name = data["name"]
-                    description = data["description"]
-                    for selector_value in selectors:
-                        selector = selector_value["selector"]
-                        selector_names = selector_value["selector_names"].split(",")
-                        if attr == "value":
-                            results = self.selenium_mode.find_elements_value_by_js_wait(self.__driver, selector)
-                            get_data_unit = {}
-                            for i in range( len(selector_names) ):
-                                selector_name = selector_names[i]
-                                selector_value = results[i]
-                                get_data_unit[selector_name] = selector_value
-                            getdata_result[name] = {
-                                "description" : description,
-                                "token" : name,
-                                "data" : get_data_unit
-                            }
+    def get_data_from_thread(self,args):
+        username = args["username"]
+        # datatype = args["datatype"]
+        # password = args["password"]
+        # method = args["method"]
+        th = self.selenium_multi_process_mode.get_thread(username)
+        getdata_result = th.get_data(args)
         return getdata_result
 
-
-    def login_check(self):
-        if self.__driver == None:
-            return False
-        self.__driver.refresh()
-        loadingVerifyURL = self.__config["login"]["loadingVerifyURL"]
-        current_url = self.__driver.current_url
-        if current_url.find(loadingVerifyURL) == -1:
-            print(f"loading_verify successfully.")
-            return True
-        else:
-            return False
-
-    def login_verify(self):
-        loadingVerifyURL = self.__config["login"]["loadingVerifyURL"]
-        current_url = self.__driver.current_url
-        if current_url.find(loadingVerifyURL) == -1:
-            print(f"loading_verify successfully.")
-            return True
-        else:
-            print(f"loading_verifing current_url:{current_url} to loadingVerifyURL:{loadingVerifyURL} ")
-            time.sleep(1)
-            return self.login_verify()
-
-    def login(self):
-        userInput = self.__config["login"]["userInput"]
-        pwdInput = self.__config["login"]["pwdInput"]
-        submit = self.__config["login"]["submit"]
-        loadURL = self.__config["login"]["loadURL"]
-        loginUser = self.__config["login"]["loginUser"]
-        loginPwd = self.__config["login"]["loginPwd"]
-        self.init_driver(loadURL)
-        userInputElement = self.selenium_mode.find_element_wait(self.__driver,userInput)
-        pwdInputElement = self.selenium_mode.find_element_wait(self.__driver,pwdInput)
-        submitElement = self.selenium_mode.find_element_wait(self.__driver,submit)
-        userInputElement.send_keys(loginUser)
-        pwdInputElement.send_keys(loginPwd)
-        submitElement.click()
-
-    def login_and_verify(self):
-        self.login()
-        is_loading = self.login_verify()
-        self.login_pre()
-        return is_loading
-
-    def login_pre(self):
-        login_pre = self.__config["login"]["login_pre"]
-        if "clicks" in login_pre:
-            clicks = login_pre["clicks"]
-            for click_selector in clicks:
-                click_element = self.selenium_mode.find_element_wait(self.__driver, click_selector)
-                click_element.click()
-
-    def logined_acitve(self):
-        active_url = self.__config["login"]["login_active"]["active_url"]
-        buttons = self.__config["login"]["login_active"]["buttons"]
-        self.selenium_mode.switch_to_window_by_url_and_open(self.__driver,active_url)
-        for button_selector in buttons:
-            button_selector = self.selenium_mode.find_element_wait(self.__driver,button_selector)
-            button_selector.click()
 
     def init_driver_local_test(self,html_name="index.html"):
         self.__driver = self.selenium_mode.open_local_html_to_beautifulsoup(html_name)
 
-    def init_driver(self,url=None,cb=None):
-        if self.__driver == None:
-            if url != None:
-                self.__driver = self.selenium_mode.open_url(url=url,empty_driver=False)
-                print('load_JQuery loading..')
-                self.selenium_mode.load_JQuery_wait(self.__driver)
-            else:
-                self.__driver = self.selenium_mode.get_empty_driver()
-        else:
-            js = "window.open('{}','_blank');"
-            self.__driver.execute_script(js.format(url))
-            index = (len(self.__driver.window_handles) - 1)
-            print(f"self.__driver.switch_to.window to {index}")
-            self.__driver.switch_to.window(self.__driver.window_handles[index])
-            self.selenium_mode.load_JQuery_wait(self.__driver)
-        if cb != None: cb()
 
     def start_thread_for_scan_trade_tick_list(self,click=True):
         #等待元素出现
@@ -530,13 +449,13 @@ class B2Bworkbaidu(BaseClass):
     def wait_and_find_data_token_names(self,click=False):
         is_beautifulsoup = self.is_beautifulsoup()
         if  is_beautifulsoup is not True:
-            WebDriverWait(self.__driver, 0).until(EC.presence_of_element_located( (By.CSS_SELECTOR, '''[data-token-name]''') ))
+            WebDriverWait( 0).until(EC.presence_of_element_located( (By.CSS_SELECTOR, '''[data-token-name]''') ))
         if click:
-            change_click = self.selenium_mode.find_text_from(self.__driver, "//*[@data-clk]", "Change")
+            change_click = self.selenium_mode.find_text_from( "//*[@data-clk]", "Change")
             change_click.click()
         if self.__allPremium == None:
             # self.__allPremium = self.__driver.find_elements(By.XPATH,'//*[@data-token-name|@data-id]')
-            self.__allPremium = self.selenium_mode.find_elements(self.__driver,'//*[@data-token-name|@data-id]')
+            self.__allPremium = self.selenium_mode.find_elements('//*[@data-token-name|@data-id]')
         return self.__allPremium
 
     def trade_rise_is_change(self,tick_scratch_data,grasp_historical_pop):

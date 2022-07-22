@@ -15,7 +15,7 @@ import sched
 # app = Flask(__name__)
 
 class WebserverMode(BaseClass):
-    def __init__(self):
+    def __init__(self,args):
         pass
 
     def create_server(self,target="",port=18080):

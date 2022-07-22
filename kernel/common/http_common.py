@@ -10,9 +10,8 @@ from concurrent.futures import ThreadPoolExecutor,as_completed
 
 class HttpCommon(BaseClass):
 
-    def __init__(self):
+    def __init__(self,args):
         pass
-
 
     def open_url_beautifulsoup(self,url,decode="utf-8"):
         content = self.open_url(url,decode)
