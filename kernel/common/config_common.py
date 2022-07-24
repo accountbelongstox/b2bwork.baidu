@@ -40,7 +40,7 @@ class ConfigCommon(BaseClass):
         return sub_dir
 
     def abs_dir__(self,dir):
-        cwd = os.getcwd()
+        cwd = self.getcwd()
         dir = f"{ os.path.join(cwd,dir)}".replace('\\','/')
         if os.path.exists(dir) and os.path.isdir(dir):
             dir = dir+"/"
@@ -54,8 +54,12 @@ class ConfigCommon(BaseClass):
         cfg = self.config(type="ini",section=section,key=key)
         return cfg
 
+    def getcwd(self):
+        return os.path.abspath(__file__).split('kernel')[0]
+
     def config(self,type="cfg",section="",key=""):
-        cfg_path = os.path.join(os.getcwd(),"kernel/config.cfg")
+        cwd = self.getcwd()
+        cfg_path = os.path.join(cwd,"kernel/config.cfg")
         if type=="cfg":
             cfg_parser = configparser.RawConfigParser()
         if type=="ini":

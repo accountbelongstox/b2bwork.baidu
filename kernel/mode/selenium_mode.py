@@ -151,6 +151,7 @@ class SeleniumMode(BaseClass):
         options.add_argument('--ignore-certificate-errors')
         options.add_argument('--ignore-ssl-errors')
         options.add_argument('--disable-infobars')# 禁用浏览器正在被自动化程序控制的提示
+        options.add_argument("no-sandbox")
         #options.add_argument('--blink-settings=imagesEnabled=false')  # 不加载图片, 提升速度
         if self.__headless:
             options.add_argument('--headless')

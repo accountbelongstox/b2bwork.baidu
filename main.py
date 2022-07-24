@@ -1,4 +1,4 @@
-# 入口程序
+# entry program
 import sys
 from kernel import controler
 

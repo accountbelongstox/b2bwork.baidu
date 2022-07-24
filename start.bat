@@ -1,1 +1,1 @@
-python main.py b2bworkBaidu
+python.exe main.py b2bworkBaidu

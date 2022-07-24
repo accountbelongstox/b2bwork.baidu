@@ -12,3 +12,8 @@ class BaseClass:
     def __getattr__(self, item):
         return self.__dict__.get(item)
 
+    def get_cwd(self):
+        return __file__.split('kernel')[0]
+
+
+
